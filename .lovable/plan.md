@@ -1,104 +1,87 @@
+# Integração com Supabase externo
 
-# Sistema Interno para Freelancer
+Vamos conectar o sistema ao seu projeto Supabase (`tdtmxddukuqsxsiiwzqp`) usando a publishable key, substituir o `localStorage` por chamadas reais ao banco e migrar o seed como dados iniciais.
 
-Sistema administrativo de página única (sem login) para gerenciar orçamentos, pedidos, clientes, serviços e financeiro, com Kanban arrastável e geração de PDF profissional inspirada no modelo enviado.
+## 1. Configuração do cliente
 
-## Stack e Arquitetura
-
-- TanStack Start + React + TypeScript + Tailwind (já configurados)
-- shadcn/ui para componentes (cards, tabelas, modais, formulários)
-- @dnd-kit para Kanban arrastável
-- react-hook-form + zod para formulários
-- @react-pdf/renderer para geração do PDF (visualização + download)
-- Zustand para estado global + persistência em localStorage (camada de "repositório" isolada para troca futura por Supabase)
-- Dados mockados iniciais (clientes, serviços, orçamentos de exemplo)
-
-## Estrutura de Rotas (src/routes/)
+Criar `src/integrations/supabase/client.ts` apontando para sua URL e publishable key (chave pública — pode ficar no código). Sem login: a API anônima fará leitura e escrita direto, já que é um sistema de uso pessoal.
 
 ```
-__root.tsx              Layout com sidebar + topbar
-index.tsx               Dashboard
-kanban.tsx              Kanban de orçamentos/pedidos
-clientes.tsx            Lista + CRUD de clientes
-servicos.tsx            Lista + CRUD de serviços
-orcamentos.tsx          Lista tabular de orçamentos
-orcamentos.$id.tsx      Detalhe / edição de orçamento + preview PDF
-financeiro.tsx          Contas a pagar/receber
-empresa.tsx             Dados da minha empresa
+SUPABASE_URL = https://tdtmxddukuqsxsiiwzqp.supabase.co
+SUPABASE_PUBLISHABLE_KEY = sb_publishable_sV6Tal25v-z7Def-bEPV1A_v5IpDrpr
 ```
 
-## Módulos
+## 2. SQL para você rodar no Supabase
 
-### 1. Dashboard
-Cards de indicadores: total em orçamentos abertos, em produção, entregues, a receber, recebido, a pagar; lista dos últimos orçamentos; próximos vencimentos; gráfico simples por status.
+Vou gerar **um único script SQL** (`docs/setup-supabase.sql`) com:
 
-### 2. Kanban
-4 colunas: Orçamento → Em produção → Vistoria → Entregue. Cards arrastáveis com nome do cliente, projeto, valor, prazo, status financeiro (badge pago/pendente/parcial), data. Ao soltar em "Em produção", marca data de aprovação e oferece criar conta a receber. Click no card abre modal de detalhes.
+- `CREATE TABLE` das 7 tabelas (empresas, clientes, servicos, orcamentos, orcamento_itens, financeiro, historico_status) conforme `docs/banco-de-dados.md`.
+- `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` em todas.
+- Policies permissivas para o role `anon` (SELECT/INSERT/UPDATE/DELETE) — adequado para sistema interno sem login.
+- `INSERT` com os dados do seed atual (empresa, 2 clientes, 12 serviços, 2 orçamentos com itens, 3 lançamentos financeiros).
+- Índices em FKs principais (`cliente_id`, `orcamento_id`, `status`).
 
-### 3. Clientes
-Tabela com busca; modal de criação/edição com nome, telefone, e-mail, CPF/CNPJ, endereço completo, observações.
+Você cola no **SQL Editor → New query → Run**.
 
-### 4. Serviços
-Tabela + modal: nome, descrição, valor padrão, unidade (serviço/hora/mensalidade/pacote), ativo/inativo, observações. Lista pré-populada com os serviços do briefing.
+## 3. Camada de repositório
 
-### 5. Orçamentos
-Tela de criação/edição com:
-- Número automático (formato `ORC-AAAAMMDD-NNNNN`)
-- Seleção de cliente (combobox)
-- Nome e descrição do projeto
-- Tabela de itens (adicionar serviço do catálogo, editar descrição/qtd/valor unitário; subtotal calculado)
-- Desconto, acréscimo, total final automáticos
-- Forma de pagamento, prazo de entrega, validade, observações, condições comerciais (com texto padrão da empresa)
-- Histórico de mudanças de status
-- Botões: Salvar, Visualizar PDF, Baixar PDF, Mover para próxima etapa
+Criar `src/lib/repository.ts` com funções tipadas para cada tabela:
 
-### 6. Geração de PDF
-Componente `OrcamentoPDF` com @react-pdf/renderer reproduzindo o layout do modelo enviado:
-- Cabeçalho com logo + dados da empresa à esquerda, bloco "ORÇAMENTO Nº / Data / Status" à direita
-- Bloco "Dados do cliente"
-- Bloco de totais (subtotal, desconto, acréscimo, total)
-- Tabela de itens (item, serviço, descrição, un., qtde, preço un., subtotal, prazo)
-- Condições comerciais, forma de pagamento, observações
-- Rodapé com campo de aceite/assinatura e dados de recebimento
-Visualização inline via `<PDFViewer>` + download via `<PDFDownloadLink>`.
+- `empresaRepo`: `get()`, `upsert(empresa)`
+- `clientesRepo`: `list()`, `upsert(cliente)`, `remove(id)`
+- `servicosRepo`: `list()`, `upsert(servico)`, `remove(id)`
+- `orcamentosRepo`: `list()` (com join de itens e histórico), `get(id)`, `upsert(orcamento)` (transação: upsert orcamento + delete/insert itens + insert histórico), `remove(id)`, `move(id, status)` (atualiza status, adiciona histórico, cria conta a receber automaticamente quando aprovado)
+- `financeiroRepo`: `list()`, `upsert(f)`, `remove(id)`
 
-### 7. Financeiro
-Tabela de lançamentos com filtros (tipo, status, período). Modal de criação/edição: tipo (pagar/receber), descrição, cliente, orçamento vinculado, valor, vencimento, pagamento, status, forma. Geração automática de conta a receber quando orçamento é aprovado.
+Mapeamento: o tipo `Orcamento.itens[]` vira linhas em `orcamento_itens` (campo `ordem` para preservar posição). `Orcamento.historico[]` vira linhas em `historico_status`.
 
-### 8. Empresa
-Formulário único: nome, logo (upload → base64 em localStorage), CPF/CNPJ, telefone, e-mail, endereço, site, redes sociais, dados bancários/Pix, condições comerciais padrão, observações padrão. Usado automaticamente no PDF.
+## 4. Refazer o store
 
-## Camada de Dados (preparada para Supabase)
+Reescrever `src/lib/store.ts` usando **TanStack Query** (`useQuery` + `useMutation`) em vez de Zustand+persist:
 
-Tudo passa por `src/lib/repository/*.ts` (um arquivo por entidade) com interface assíncrona. Implementação inicial usa Zustand + localStorage; trocar por Supabase depois é só reimplementar o repositório.
+- Hook `useEmpresa()`, `useClientes()`, `useServicos()`, `useOrcamentos()`, `useOrcamento(id)`, `useFinanceiro()`
+- Hook de mutations `useUpsertCliente()`, `useRemoveCliente()`, etc., todas com `invalidateQueries` apropriado
+- Manter os helpers puros `gerarNumeroOrcamento()` e `novoItem()`
 
-### Tabelas planejadas
+Como já temos `QueryClient` no router context (`src/router.tsx`), só vamos adicionar o `QueryClientProvider` no `__root.tsx` se ainda não estiver.
 
-- **empresas** — id, nome, logo_url, documento, telefone, email, endereco, site, redes_sociais (jsonb), dados_bancarios, condicoes_padrao, observacoes_padrao
-- **clientes** — id, nome, telefone, email, documento, endereco (jsonb), observacoes, created_at
-- **servicos** — id, nome, descricao, valor_padrao, unidade, ativo, observacoes
-- **orcamentos** — id, numero, cliente_id (FK), nome_projeto, descricao, status (enum: orcamento/em_producao/vistoria/entregue), subtotal, desconto, acrescimo, total, forma_pagamento, prazo_entrega, validade, observacoes, condicoes, data_criacao, data_aprovacao, data_entrega
-- **orcamento_itens** — id, orcamento_id (FK), servico_id (FK nullable), descricao, quantidade, valor_unitario, valor_total, ordem
-- **financeiro** — id, tipo (pagar/receber), descricao, cliente_id (FK nullable), orcamento_id (FK nullable), valor, vencimento, pagamento, status (pendente/pago/atrasado/parcial), forma_pagamento, observacoes
-- **historico_status** — id, orcamento_id (FK), status_anterior, status_novo, data, observacao
-- **configuracoes** — id, chave, valor (jsonb)
+## 5. Atualizar todas as páginas
 
-## Documentação
+Substituir o uso de `useApp()` por hooks de Query nas 8 telas. **Sem mudança visual** — apenas troca de fonte de dados:
 
-Pasta `docs/` no projeto com arquivos markdown:
-- `README.md` — visão geral e como rodar
-- `modulos.md` — cada módulo, fluxos e componentes
-- `banco-de-dados.md` — tabelas, campos, relacionamentos, SQL pronto para Supabase
-- `supabase.md` — passo a passo para conectar Supabase e substituir o repositório mock
-- `pdf.md` — como o PDF é montado e como customizar
+- `index.tsx` (dashboard): consome `useOrcamentos()` + `useFinanceiro()` para os cards
+- `kanban.tsx`: usa `useOrcamentos()` + `useMoveOrcamento()` no `onDragEnd`
+- `clientes.tsx`, `servicos.tsx`: list + upsert + remove
+- `orcamentos.index.tsx`: list + criar novo
+- `orcamentos.$id.tsx`: get + upsert (salvar) com loading/erro
+- `financeiro.tsx`: list + marcar como pago + criar/editar/remover
+- `empresa.tsx`: get + upsert
+- Loading states com skeleton; erros via `toast` (sonner já instalado)
 
-## Visual
+## 6. Limpeza
 
-Sidebar fixa à esquerda com navegação (Dashboard, Kanban, Orçamentos, Clientes, Serviços, Financeiro, Empresa), topbar com nome do sistema. Tema claro profissional, tipografia limpa (Inter), tokens semânticos em `src/styles.css`. Responsivo (sidebar colapsa em mobile).
+- Apagar `src/lib/seed.ts` (dados agora vivem no banco)
+- Remover dependência `zustand` do `package.json`
+- Atualizar `docs/supabase.md` com instruções do novo fluxo
+- Atualizar `docs/README.md` mencionando que está conectado ao Supabase real
 
-## O que NÃO entra agora (mantém escopo)
+## Detalhes técnicos
 
-- Login/auth (sistema é pessoal)
-- Integração real com Supabase (estrutura pronta, mas não conectada)
-- Envio de e-mail / WhatsApp do orçamento
-- Upload de logo para storage remoto (fica em base64 local)
+- **Chave usada:** publishable key (segura no client). Não precisaremos da service_role pois o sistema é só seu uso e RLS está liberada para `anon`.
+- **Conta a receber automática:** quando `moveOrcamento(id, "em_producao")` for chamado, o repositório também insere a linha em `financeiro` com `tipo='receber'`, `status='pendente'`, valor = total do orçamento.
+- **Numeração de orçamento:** continua client-side via `gerarNumeroOrcamento()` (busca prefixo `ORC-YYYYMMDD-` e incrementa). Coluna `numero` tem `UNIQUE` — em caso de colisão (rara), nova tentativa.
+- **PDF:** sem alteração; lê do mesmo objeto `Orcamento` que vier da query.
+- **Tipos:** mantemos `src/lib/types.ts` como fonte da verdade — o repositório mapeia para/da estrutura achatada do banco.
+
+## Arquivos
+
+**Criar**: `src/integrations/supabase/client.ts`, `src/lib/repository.ts`, `docs/setup-supabase.sql`
+**Reescrever**: `src/lib/store.ts` (vira hooks de Query), todas as 8 rotas, `docs/supabase.md`, `docs/README.md`
+**Apagar**: `src/lib/seed.ts`
+**Editar**: `package.json` (remover zustand), `src/routes/__root.tsx` (garantir `QueryClientProvider`)
+
+## Como você vai usar depois
+
+1. Abre o SQL Editor do seu projeto Supabase
+2. Cola e roda o `docs/setup-supabase.sql`
+3. Recarrega o preview — os dados de seed já estarão lá e qualquer alteração persiste no banco
