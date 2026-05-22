@@ -1,4 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   KanbanSquare,
@@ -9,6 +10,8 @@ import {
   Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useApp } from "@/lib/store";
+
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },

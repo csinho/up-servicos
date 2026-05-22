@@ -146,7 +146,7 @@ export const useApp = create<AppState>()(
 
       resetSeed: () => set(initial),
     }),
-    { name: "freela-os-v1" }
+    { name: "freela-os-v1", skipHydration: true }
   )
 );
 
