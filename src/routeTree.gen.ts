@@ -9,38 +9,168 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ServicosRouteImport } from './routes/servicos'
+import { Route as KanbanRouteImport } from './routes/kanban'
+import { Route as FinanceiroRouteImport } from './routes/financeiro'
+import { Route as EmpresaRouteImport } from './routes/empresa'
+import { Route as ClientesRouteImport } from './routes/clientes'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OrcamentosIndexRouteImport } from './routes/orcamentos.index'
+import { Route as OrcamentosIdRouteImport } from './routes/orcamentos.$id'
 
+const ServicosRoute = ServicosRouteImport.update({
+  id: '/servicos',
+  path: '/servicos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KanbanRoute = KanbanRouteImport.update({
+  id: '/kanban',
+  path: '/kanban',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinanceiroRoute = FinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmpresaRoute = EmpresaRouteImport.update({
+  id: '/empresa',
+  path: '/empresa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientesRoute = ClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrcamentosIndexRoute = OrcamentosIndexRouteImport.update({
+  id: '/orcamentos/',
+  path: '/orcamentos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrcamentosIdRoute = OrcamentosIdRouteImport.update({
+  id: '/orcamentos/$id',
+  path: '/orcamentos/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/clientes': typeof ClientesRoute
+  '/empresa': typeof EmpresaRoute
+  '/financeiro': typeof FinanceiroRoute
+  '/kanban': typeof KanbanRoute
+  '/servicos': typeof ServicosRoute
+  '/orcamentos/$id': typeof OrcamentosIdRoute
+  '/orcamentos/': typeof OrcamentosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/clientes': typeof ClientesRoute
+  '/empresa': typeof EmpresaRoute
+  '/financeiro': typeof FinanceiroRoute
+  '/kanban': typeof KanbanRoute
+  '/servicos': typeof ServicosRoute
+  '/orcamentos/$id': typeof OrcamentosIdRoute
+  '/orcamentos': typeof OrcamentosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/clientes': typeof ClientesRoute
+  '/empresa': typeof EmpresaRoute
+  '/financeiro': typeof FinanceiroRoute
+  '/kanban': typeof KanbanRoute
+  '/servicos': typeof ServicosRoute
+  '/orcamentos/$id': typeof OrcamentosIdRoute
+  '/orcamentos/': typeof OrcamentosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/clientes'
+    | '/empresa'
+    | '/financeiro'
+    | '/kanban'
+    | '/servicos'
+    | '/orcamentos/$id'
+    | '/orcamentos/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/clientes'
+    | '/empresa'
+    | '/financeiro'
+    | '/kanban'
+    | '/servicos'
+    | '/orcamentos/$id'
+    | '/orcamentos'
+  id:
+    | '__root__'
+    | '/'
+    | '/clientes'
+    | '/empresa'
+    | '/financeiro'
+    | '/kanban'
+    | '/servicos'
+    | '/orcamentos/$id'
+    | '/orcamentos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ClientesRoute: typeof ClientesRoute
+  EmpresaRoute: typeof EmpresaRoute
+  FinanceiroRoute: typeof FinanceiroRoute
+  KanbanRoute: typeof KanbanRoute
+  ServicosRoute: typeof ServicosRoute
+  OrcamentosIdRoute: typeof OrcamentosIdRoute
+  OrcamentosIndexRoute: typeof OrcamentosIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/servicos': {
+      id: '/servicos'
+      path: '/servicos'
+      fullPath: '/servicos'
+      preLoaderRoute: typeof ServicosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kanban': {
+      id: '/kanban'
+      path: '/kanban'
+      fullPath: '/kanban'
+      preLoaderRoute: typeof KanbanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/financeiro': {
+      id: '/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof FinanceiroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/empresa': {
+      id: '/empresa'
+      path: '/empresa'
+      fullPath: '/empresa'
+      preLoaderRoute: typeof EmpresaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clientes': {
+      id: '/clientes'
+      path: '/clientes'
+      fullPath: '/clientes'
+      preLoaderRoute: typeof ClientesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +178,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/orcamentos/': {
+      id: '/orcamentos/'
+      path: '/orcamentos'
+      fullPath: '/orcamentos/'
+      preLoaderRoute: typeof OrcamentosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orcamentos/$id': {
+      id: '/orcamentos/$id'
+      path: '/orcamentos/$id'
+      fullPath: '/orcamentos/$id'
+      preLoaderRoute: typeof OrcamentosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ClientesRoute: ClientesRoute,
+  EmpresaRoute: EmpresaRoute,
+  FinanceiroRoute: FinanceiroRoute,
+  KanbanRoute: KanbanRoute,
+  ServicosRoute: ServicosRoute,
+  OrcamentosIdRoute: OrcamentosIdRoute,
+  OrcamentosIndexRoute: OrcamentosIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
