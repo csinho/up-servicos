@@ -1,7 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, lazy, Suspense } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect, type ComponentType } from "react";
 import { useApp, novoItem } from "@/lib/store";
-import type { Orcamento, OrcamentoItem, StatusOrcamento } from "@/lib/types";
+import type { Cliente, Empresa, Orcamento, OrcamentoItem, StatusOrcamento } from "@/lib/types";
 import { calcSubtotal, calcTotal, formatBRL, STATUS_LABEL, STATUS_ORDER } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Plus, Trash2, Download, Eye } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const PDFViewerLazy = lazy(() => import("@/components/pdf-preview").then((m) => ({ default: m.PDFPreview })));
-const DownloadButton = lazy(() => import("@/components/pdf-preview").then((m) => ({ default: m.DownloadBtn })));
+type PdfProps = { orcamento: Orcamento; empresa: Empresa; cliente?: Cliente };
+
+function ClientOnlyPDF({ kind, ...props }: PdfProps & { kind: "preview" | "download" }) {
+  const [Comp, setComp] = useState<ComponentType<PdfProps> | null>(null);
+  useEffect(() => {
+    import("@/components/pdf-preview").then((m) =>
+      setComp(() => (kind === "preview" ? m.PDFPreview : m.DownloadBtn))
+    );
+  }, [kind]);
+  if (!Comp) {
+    return kind === "download" ? (
+      <Button variant="outline" disabled><Download className="h-4 w-4 mr-1" />PDF</Button>
+    ) : (
+      <div className="p-8 text-center text-sm text-muted-foreground">Carregando…</div>
+    );
+  }
+  return <Comp {...props} />;
+}
 
 export const Route = createFileRoute("/orcamentos/$id")({
   head: () => ({ meta: [{ title: "Orçamento — Freela OS" }] }),
