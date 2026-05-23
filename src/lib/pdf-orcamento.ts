@@ -1,5 +1,16 @@
-import type { Content, TDocumentDefinitions } from "pdfmake/interfaces";
 import type { Cliente, Empresa, Orcamento } from "./types";
+
+/** Tipos mínimos do docDefinition (evita importar pdfmake no bundle SSR). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PdfContent = any;
+type PdfDocDefinition = {
+  pageSize?: string;
+  pageMargins?: number[];
+  defaultStyle?: Record<string, unknown>;
+  styles?: Record<string, unknown>;
+  footer?: () => PdfContent;
+  content: PdfContent[];
+};
 import {
   calcDescontoValor,
   calcSubtotal,
@@ -25,7 +36,7 @@ function enderecoLinha(e?: {
   return [p1, p2, e.cep && `CEP ${e.cep}`].filter(Boolean).join(" — ");
 }
 
-function card(title: string, body: Content[]): Content {
+function card(title: string, body: PdfContent[]): PdfContent {
   return {
     margin: [0, 0, 0, 8],
     table: {
@@ -49,14 +60,14 @@ export function buildOrcamentoPdfDoc(
   orcamento: Orcamento,
   empresa: Empresa,
   cliente?: Cliente,
-): TDocumentDefinitions {
+): PdfDocDefinition {
   const subtotal = calcSubtotal(orcamento.itens);
   const descontoValor = calcDescontoValor(subtotal, orcamento.desconto_percentual);
   const total = calcTotal(orcamento);
   const docLabel = labelDocumento(orcamento.status).toUpperCase();
   const itensTitulo = `Itens do ${labelDocumentoLower(orcamento.status)}`;
 
-  const empresaCol: Content[] = [
+  const empresaCol: PdfContent[] = [
     { text: empresa.nome, style: "companyName" },
     ...(empresa.documento ? [{ text: empresa.documento, style: "small" }] : []),
     ...((empresa.telefone || empresa.email)
@@ -66,7 +77,7 @@ export function buildOrcamentoPdfDoc(
     ...(empresa.site ? [{ text: empresa.site, style: "small" }] : []),
   ];
 
-  const headerLeft: Content = empresa.logo_url
+  const headerLeft: PdfContent = empresa.logo_url
     ? {
         columns: [
           { image: empresa.logo_url, width: 52, margin: [0, 0, 10, 0] },
@@ -75,7 +86,7 @@ export function buildOrcamentoPdfDoc(
       }
     : { stack: empresaCol };
 
-  const itemRows: Content[][] = [
+  const itemRows: PdfContent[][] = [
     [
       { text: "#", style: "tableHeader" },
       { text: "Serviço / Descrição", style: "tableHeader" },

@@ -1,21 +1,50 @@
-import type { TDocumentDefinitions } from "pdfmake/interfaces";
 import { buildOrcamentoPdfDoc } from "./pdf-orcamento";
 import type { Cliente, Empresa, Orcamento } from "./types";
 
-type PdfMake = typeof import("pdfmake/build/pdfmake").default;
+type PdfMakeInstance = {
+  vfs?: Record<string, string>;
+  createPdf: (doc: ReturnType<typeof buildOrcamentoPdfDoc>) => {
+    getBlob: (cb: (blob: Blob) => void) => void;
+    download: (filename: string) => void;
+  };
+};
 
-let pdfMakeReady: Promise<PdfMake> | null = null;
+let pdfMakeReady: Promise<PdfMakeInstance> | null = null;
 
-async function loadPdfMake(): Promise<PdfMake> {
+function resolvePdfMake(mod: unknown): PdfMakeInstance {
+  const candidate =
+    (mod as { default?: PdfMakeInstance }).default ?? (mod as PdfMakeInstance);
+  if (candidate && typeof candidate.createPdf === "function") {
+    return candidate;
+  }
+  throw new Error("Biblioteca pdfmake não inicializou corretamente.");
+}
+
+function resolveVfs(mod: unknown): Record<string, string> | undefined {
+  const m = mod as {
+    default?: Record<string, string>;
+    pdfMake?: { vfs?: Record<string, string> };
+  };
+  if (m.pdfMake?.vfs) return m.pdfMake.vfs;
+  const d = m.default;
+  if (d && typeof d === "object" && !("createPdf" in d)) {
+    return d as Record<string, string>;
+  }
+  return undefined;
+}
+
+async function loadPdfMake(): Promise<PdfMakeInstance> {
   if (!pdfMakeReady) {
     pdfMakeReady = (async () => {
-      const pdfMake = (await import("pdfmake/build/pdfmake")).default;
-      const vfsModule = await import("pdfmake/build/vfs_fonts");
-      const vfs =
-        (vfsModule as { pdfMake?: { vfs: PdfMake["vfs"] } }).pdfMake?.vfs ??
-        (vfsModule as { default?: { pdfMake?: { vfs: PdfMake["vfs"] } } }).default?.pdfMake
-          ?.vfs;
+      const [pdfMakeMod, vfsMod] = await Promise.all([
+        import("pdfmake/build/pdfmake.js"),
+        import("pdfmake/build/vfs_fonts.js"),
+      ]);
+
+      const pdfMake = resolvePdfMake(pdfMakeMod);
+      const vfs = resolveVfs(vfsMod);
       if (vfs) pdfMake.vfs = vfs;
+
       return pdfMake;
     })();
   }
@@ -30,10 +59,14 @@ export async function createOrcamentoPdfBlob(
   const pdfMake = await loadPdfMake();
   const doc = buildOrcamentoPdfDoc(orcamento, empresa, cliente);
   return new Promise((resolve, reject) => {
-    pdfMake.createPdf(doc).getBlob((blob: Blob) => {
-      if (blob) resolve(blob);
-      else reject(new Error("Falha ao gerar PDF"));
-    });
+    try {
+      pdfMake.createPdf(doc).getBlob((blob: Blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("Falha ao gerar PDF"));
+      });
+    } catch (e) {
+      reject(e);
+    }
   });
 }
 
@@ -56,11 +89,10 @@ export async function openOrcamentoPdf(
   return URL.createObjectURL(blob);
 }
 
-/** Para testes ou extensão futura */
 export function getOrcamentoDocDefinition(
   orcamento: Orcamento,
   empresa: Empresa,
   cliente?: Cliente,
-): TDocumentDefinitions {
+) {
   return buildOrcamentoPdfDoc(orcamento, empresa, cliente);
 }
