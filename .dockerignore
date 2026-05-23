@@ -13,6 +13,7 @@ dist
 *.log
 .DS_Store
 docs
+!deploy
 .lovable
 .cursor
 agent-transcripts

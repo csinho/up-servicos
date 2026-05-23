@@ -105,6 +105,11 @@ No EasyPanel, associe domínio e ative TLS. Teste as rotas: `/`, `/orcamentos`, 
 - Variável não foi definida **antes** do `npm run build` no EasyPanel
 - Solução: adicione as duas `VITE_*`, dispare **Rebuild**
 
+### `Could not read file: dist/server/wrangler.json`
+
+- O build do Docker não gerou/copiou `dist/` (falha no `npm run build` ou variáveis `VITE_*` ausentes no build).
+- Solução: confira as duas `VITE_*` no EasyPanel, faça **Rebuild** após o push com o `Dockerfile` atualizado (ele copia `deploy/wrangler.server.json` após o build).
+
 ### Falha ao salvar orçamento (coluna `desconto_percentual`)
 
 - Rode a migração SQL em `docs/migrations/2026-05-22-desconto-percentual.sql`

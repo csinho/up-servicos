@@ -1,0 +1,10 @@
+{
+  "name": "freela-os",
+  "main": "index.js",
+  "compatibility_date": "2025-09-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../client"
+  },
+  "no_bundle": true
+}
