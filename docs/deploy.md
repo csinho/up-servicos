@@ -105,6 +105,12 @@ No EasyPanel, associe domínio e ative TLS. Teste as rotas: `/`, `/orcamentos`, 
 - Variável não foi definida **antes** do `npm run build` no EasyPanel
 - Solução: adicione as duas `VITE_*`, dispare **Rebuild**
 
+### Build falha em `test -f dist/server/index.js` / `dist/client`
+
+- O `npm run build` terminou sem gerar a pasta `dist/client` (comum em VPS com pouca RAM).
+- Solução: use o `Dockerfile` atualizado (`node:22-bookworm-slim` + `NODE_OPTIONS=--max-old-space-size=4096`), faça push e **Rebuild**.
+- Se persistir, aumente memória do serviço no EasyPanel (≥ 2 GB para o build).
+
 ### `Could not read file: dist/server/wrangler.json`
 
 - O build do Docker não gerou/copiou `dist/` (falha no `npm run build` ou variáveis `VITE_*` ausentes no build).

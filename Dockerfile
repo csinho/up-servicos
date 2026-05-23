@@ -1,8 +1,12 @@
-# Freela OS — build SSR (TanStack Start + Cloudflare worker runtime via Wrangler)
+# Freela OS — TanStack Start (SSR via Wrangler no container)
 
-FROM node:22-alpine AS builder
+FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
+
+# Vite + PDF precisam de RAM no build (EasyPanel/VPS pequenos falham sem isso)
+ENV NODE_OPTIONS=--max-old-space-size=4096
+ENV CI=true
 
 COPY package.json package-lock.json* ./
 
@@ -10,7 +14,6 @@ RUN npm ci
 
 COPY . .
 
-# EasyPanel: defina VITE_* nas variáveis do app (usadas no build)
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_PUBLISHABLE_KEY
 
@@ -18,36 +21,34 @@ ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY
 
 RUN test -n "$VITE_SUPABASE_URL" && test -n "$VITE_SUPABASE_PUBLISHABLE_KEY" || \
-  (echo "ERRO: defina VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY no EasyPanel antes do build." && exit 1)
+  (echo "ERRO: defina VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY no EasyPanel." && exit 1)
 
-RUN npm run build
+RUN npm run build && node scripts/verify-dist.mjs
 
-# Garante config do Wrangler (o plugin às vezes não gera no Linux/CI)
-RUN test -f dist/server/index.js && test -d dist/client
-RUN cp deploy/wrangler.server.json dist/server/wrangler.json
-
-# --- imagem de execução ---
-FROM node:22-alpine AS runner
+# --- execução ---
+FROM node:22-bookworm-slim AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
-RUN apk add --no-cache tini
+RUN apt-get update && apt-get install -y --no-install-recommends tini && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev && npm install wrangler@4.94.0
 
 COPY --from=builder /app/dist ./dist
-
-RUN test -f dist/server/wrangler.json && test -f dist/server/index.js && test -d dist/client
-
 COPY deploy/wrangler.server.json ./deploy/wrangler.server.json
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
+    test -f dist/server/wrangler.json && \
+    test -f dist/server/index.js && \
+    test -d dist/client
 
 EXPOSE 3000
 
-ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/usr/local/bin/docker-entrypoint.sh"]
