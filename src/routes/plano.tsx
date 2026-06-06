@@ -25,7 +25,11 @@ function PlanoPage() {
     <div className="space-y-6 max-w-3xl">
       <PageHeader
         title="Plano Freela OS"
-        description="Assinatura mensal via PIX — trial de 7 dias, depois R$ 39,90/mês."
+        description={
+          billing
+            ? `Assinatura mensal via PIX — trial de ${billing.trialDays} dias, depois ${billing.planLabel}.`
+            : "Assinatura mensal via PIX."
+        }
       />
 
       <Card>

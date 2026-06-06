@@ -14,7 +14,7 @@ export async function fetchEmpresaBilling(
   const { data, error } = await sb
     .from("empresas")
     .select(
-      "id, nome, telefone, email, created_at, billing_status, trial_ends_at, next_billing_at, billing_period_ends_at, last_payment_at, woovi_charge_correlation_id, woovi_payment_link_url",
+      "id, nome, telefone, email, status, created_at, billing_status, trial_ends_at, next_billing_at, billing_period_ends_at, last_payment_at, woovi_charge_correlation_id, woovi_payment_link_url",
     )
     .eq("id", empresaId)
     .maybeSingle();

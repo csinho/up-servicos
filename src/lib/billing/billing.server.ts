@@ -1,5 +1,6 @@
 import { getSupabaseServer } from "@/integrations/supabase/server";
-import { PLAN_VALUE_CENTS, REMINDER_DAYS } from "./constants";
+import { getBillingPlanValueCents } from "@/lib/admin/system-settings.server";
+import { REMINDER_DAYS } from "./constants";
 import { formatDatePt, nextBillingAfterPayment } from "./dates";
 import { fetchEmpresaBilling, updateEmpresaBilling } from "./empresa.server";
 import { sendBillingNotification } from "./notifications.server";
@@ -73,10 +74,11 @@ export async function aplicarPagamentoEmpresa(
     env,
   );
 
+  const defaultCents = await getBillingPlanValueCents(env);
   await registrarPagamentoPlano({
     empresaId,
     paidAt,
-    valueCents: meta.valueCents ?? PLAN_VALUE_CENTS,
+    valueCents: meta.valueCents ?? defaultCents,
     correlationId: meta.correlationId ?? null,
     endToEndId,
     wooviEventKey: meta.eventKey,

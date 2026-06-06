@@ -47,6 +47,7 @@ POST https://upservicos.com/api/webhooks/woovi
 | `SUPABASE_SERVICE_ROLE_KEY` | Sim | Billing / webhooks no servidor |
 | `WOOVI_APP_ID` | Sim | API Woovi |
 | `BILLING_CRON_SECRET` | Sim | Protege `/api/cron/billing` |
+| `ADMIN_WHATSAPP_ALLOWLIST` | Sim (admin) | Login do painel `/admin` — 11 dígitos, vírgula |
 
 Opcional: `WOOVI_WEBHOOK_AUTHORIZATION` — só se configurar header no painel Woovi.
 
@@ -78,6 +79,7 @@ npm run deploy
 npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 npx wrangler secret put WOOVI_APP_ID
 npx wrangler secret put BILLING_CRON_SECRET
+npx wrangler secret put ADMIN_WHATSAPP_ALLOWLIST
 npx wrangler secret put VITE_SUPABASE_URL
 npx wrangler secret put VITE_SUPABASE_PUBLISHABLE_KEY
 ```

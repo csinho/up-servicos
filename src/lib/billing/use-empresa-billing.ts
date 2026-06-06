@@ -4,6 +4,7 @@ import {
   gerarPixPlanoRemote,
   obterBillingStatusRemote,
 } from "@/lib/api/billing.functions";
+import { startFreelaRealtime, stopFreelaRealtime } from "@/lib/supabase/realtime";
 import type { BillingUiState } from "./types";
 
 const POLL_MS = 5000;
@@ -31,6 +32,11 @@ export function useEmpresaBilling(empresaId?: string) {
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    startFreelaRealtime(() => void refresh());
+    return () => stopFreelaRealtime();
   }, [refresh]);
 
   useEffect(() => {

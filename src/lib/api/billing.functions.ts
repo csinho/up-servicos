@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { gerarPixPlano, runBillingDailyJob } from "@/lib/billing/billing.server";
-import { EMPRESA_ID, PLAN_LABEL, PLAN_VALUE_CENTS, TRIAL_DAYS } from "@/lib/billing/constants";
+import { getBillingSettings } from "@/lib/admin/system-settings.server";
+import { EMPRESA_ID, TRIAL_DAYS } from "@/lib/billing/constants";
 import { fetchEmpresaBilling, resolveEmpresaId } from "@/lib/billing/empresa.server";
 import { getBillingMutationAllowed, assertBillingAllowsMutation } from "@/lib/billing/guards.server";
 import { baixarReciboPagamento, listarPagamentosPlano } from "@/lib/billing/payments.server";
@@ -19,8 +20,12 @@ export const obterBillingStatusRemote = createServerFn({ method: "POST" })
   .inputValidator((data: { empresaId?: string }) => data)
   .handler(async ({ data }) => {
     const empresaId = resolveEmpresaId(data.empresaId);
-    const empresa = await fetchEmpresaBilling(empresaId);
-    return getBillingUiState(empresa);
+    const [empresa, plan] = await Promise.all([fetchEmpresaBilling(empresaId), getBillingSettings()]);
+    return getBillingUiState(empresa, undefined, {
+      planLabel: plan.planLabel,
+      planValueCents: plan.planValueCents,
+      trialDays: TRIAL_DAYS,
+    });
   });
 
 export const listarPagamentosPlanoRemote = createServerFn({ method: "POST" })
@@ -41,11 +46,14 @@ export const baixarReciboPagamentoRemote = createServerFn({ method: "POST" })
     return baixarReciboPagamento({ empresaId, paymentId: data.paymentId });
   });
 
-export const getPublicPlanSettingsRemote = createServerFn({ method: "GET" }).handler(async () => ({
-  planLabel: PLAN_LABEL,
-  planValueCents: PLAN_VALUE_CENTS,
-  trialDays: TRIAL_DAYS,
-}));
+export const getPublicPlanSettingsRemote = createServerFn({ method: "GET" }).handler(async () => {
+  const plan = await getBillingSettings();
+  return {
+    planLabel: plan.planLabel,
+    planValueCents: plan.planValueCents,
+    trialDays: TRIAL_DAYS,
+  };
+});
 
 export const verificarBillingMutationRemote = createServerFn({ method: "POST" })
   .inputValidator((data: { empresaId?: string }) => data)

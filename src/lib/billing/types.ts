@@ -1,10 +1,13 @@
 export type BillingStatus = "trial" | "ativo" | "pendente" | "inadimplente";
 
+export type EmpresaOperacionalStatus = "ativo" | "inativo";
+
 export type EmpresaBillingRow = {
   id: string;
   nome: string;
   telefone?: string | null;
   email?: string | null;
+  status?: EmpresaOperacionalStatus | null;
   created_at?: string | null;
   billing_status?: BillingStatus | null;
   trial_ends_at?: string | null;
@@ -17,6 +20,7 @@ export type EmpresaBillingRow = {
 
 export type BillingUiState = {
   phase: "trial" | "ativo" | "pendente";
+  isPaused: boolean;
   billingStatus: BillingStatus;
   trialEndsAt: string | null;
   nextBillingAt: string | null;

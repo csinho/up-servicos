@@ -1,4 +1,5 @@
-import { CHARGE_EXPIRES_SECONDS, PLAN_LABEL, PLAN_VALUE_CENTS } from "../constants";
+import { getBillingPlanValueCents } from "@/lib/admin/system-settings.server";
+import { CHARGE_EXPIRES_SECONDS } from "../constants";
 import { wooviFetch } from "./client.server";
 import { normalizePhoneBr11, wooviChargeComment, wooviCustomerName } from "./sanitize-text";
 
@@ -30,11 +31,16 @@ export async function createWooviPlanCharge(input: {
 }): Promise<{ correlationID: string; paymentLinkUrl: string; brCode?: string }> {
   const correlationID = buildChargeCorrelationId(input.empresaId);
   const phone = normalizePhoneBr11(input.telefone) ?? "5500000000000";
-  const comment = wooviChargeComment(`Freela OS - Plano mensal ${PLAN_LABEL}`);
+  const planValueCents = await getBillingPlanValueCents(input.env);
+  const planLabel = (planValueCents / 100).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+  const comment = wooviChargeComment(`Freela OS - Plano mensal ${planLabel}/mês`);
 
   const payload = {
     correlationID,
-    value: PLAN_VALUE_CENTS,
+    value: planValueCents,
     comment,
     expiresIn: CHARGE_EXPIRES_SECONDS,
     customer: {

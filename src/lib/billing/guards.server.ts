@@ -1,10 +1,21 @@
 import { fetchEmpresaBilling } from "./empresa.server";
-import { billingBlocksMutation, getBillingUiState } from "./state";
+import { billingBlocksMutation, empresaBlocksMutation, getBillingUiState } from "./state";
+
+export async function assertEmpresaAllowsMutation(
+  empresaId?: string,
+  env?: Record<string, string | undefined>,
+): Promise<void> {
+  const empresa = await fetchEmpresaBilling(empresaId, env);
+  if (empresaBlocksMutation(empresa)) {
+    throw new Error("Conta pausada pela administração — entre em contato com o suporte.");
+  }
+}
 
 export async function assertBillingAllowsMutation(
   empresaId?: string,
   env?: Record<string, string | undefined>,
 ): Promise<void> {
+  await assertEmpresaAllowsMutation(empresaId, env);
   const empresa = await fetchEmpresaBilling(empresaId, env);
   const state = getBillingUiState(empresa);
   if (billingBlocksMutation(state)) {
@@ -17,6 +28,12 @@ export async function getBillingMutationAllowed(
   env?: Record<string, string | undefined>,
 ): Promise<{ allowed: boolean; message?: string }> {
   const empresa = await fetchEmpresaBilling(empresaId, env);
+  if (empresaBlocksMutation(empresa)) {
+    return {
+      allowed: false,
+      message: "Conta pausada pela administração — entre em contato com o suporte.",
+    };
+  }
   const state = getBillingUiState(empresa);
   if (billingBlocksMutation(state)) {
     return {

@@ -15,11 +15,18 @@ import { Route as KanbanRouteImport } from './routes/kanban'
 import { Route as FinanceiroRouteImport } from './routes/financeiro'
 import { Route as EmpresaRouteImport } from './routes/empresa'
 import { Route as ClientesRouteImport } from './routes/clientes'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrcamentosIndexRouteImport } from './routes/orcamentos.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as OrcamentosIdRouteImport } from './routes/orcamentos.$id'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
+import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
+import { Route as AdminEmpresasIndexRouteImport } from './routes/admin.empresas.index'
 import { Route as ApiWebhooksWooviRouteImport } from './routes/api/webhooks/woovi'
 import { Route as ApiCronBillingRouteImport } from './routes/api/cron/billing'
+import { Route as AdminEmpresasEmpresaIdRouteImport } from './routes/admin.empresas.$empresaId'
 
 const ServicosRoute = ServicosRouteImport.update({
   id: '/servicos',
@@ -51,6 +58,11 @@ const ClientesRoute = ClientesRouteImport.update({
   path: '/clientes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -61,10 +73,35 @@ const OrcamentosIndexRoute = OrcamentosIndexRouteImport.update({
   path: '/orcamentos/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const OrcamentosIdRoute = OrcamentosIdRouteImport.update({
   id: '/orcamentos/$id',
   path: '/orcamentos/$id',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConfiguracoesRoute = AdminConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEmpresasIndexRoute = AdminEmpresasIndexRouteImport.update({
+  id: '/empresas/',
+  path: '/empresas/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ApiWebhooksWooviRoute = ApiWebhooksWooviRouteImport.update({
   id: '/api/webhooks/woovi',
@@ -76,19 +113,31 @@ const ApiCronBillingRoute = ApiCronBillingRouteImport.update({
   path: '/api/cron/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminEmpresasEmpresaIdRoute = AdminEmpresasEmpresaIdRouteImport.update({
+  id: '/empresas/$empresaId',
+  path: '/empresas/$empresaId',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/clientes': typeof ClientesRoute
   '/empresa': typeof EmpresaRoute
   '/financeiro': typeof FinanceiroRoute
   '/kanban': typeof KanbanRoute
   '/plano': typeof PlanoRoute
   '/servicos': typeof ServicosRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
   '/orcamentos/$id': typeof OrcamentosIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/orcamentos/': typeof OrcamentosIndexRoute
+  '/admin/empresas/$empresaId': typeof AdminEmpresasEmpresaIdRoute
   '/api/cron/billing': typeof ApiCronBillingRoute
   '/api/webhooks/woovi': typeof ApiWebhooksWooviRoute
+  '/admin/empresas/': typeof AdminEmpresasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -98,39 +147,59 @@ export interface FileRoutesByTo {
   '/kanban': typeof KanbanRoute
   '/plano': typeof PlanoRoute
   '/servicos': typeof ServicosRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
   '/orcamentos/$id': typeof OrcamentosIdRoute
+  '/admin': typeof AdminIndexRoute
   '/orcamentos': typeof OrcamentosIndexRoute
+  '/admin/empresas/$empresaId': typeof AdminEmpresasEmpresaIdRoute
   '/api/cron/billing': typeof ApiCronBillingRoute
   '/api/webhooks/woovi': typeof ApiWebhooksWooviRoute
+  '/admin/empresas': typeof AdminEmpresasIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/clientes': typeof ClientesRoute
   '/empresa': typeof EmpresaRoute
   '/financeiro': typeof FinanceiroRoute
   '/kanban': typeof KanbanRoute
   '/plano': typeof PlanoRoute
   '/servicos': typeof ServicosRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
   '/orcamentos/$id': typeof OrcamentosIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/orcamentos/': typeof OrcamentosIndexRoute
+  '/admin/empresas/$empresaId': typeof AdminEmpresasEmpresaIdRoute
   '/api/cron/billing': typeof ApiCronBillingRoute
   '/api/webhooks/woovi': typeof ApiWebhooksWooviRoute
+  '/admin/empresas/': typeof AdminEmpresasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/clientes'
     | '/empresa'
     | '/financeiro'
     | '/kanban'
     | '/plano'
     | '/servicos'
+    | '/admin/configuracoes'
+    | '/admin/dashboard'
+    | '/admin/login'
     | '/orcamentos/$id'
+    | '/admin/'
     | '/orcamentos/'
+    | '/admin/empresas/$empresaId'
     | '/api/cron/billing'
     | '/api/webhooks/woovi'
+    | '/admin/empresas/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -140,27 +209,41 @@ export interface FileRouteTypes {
     | '/kanban'
     | '/plano'
     | '/servicos'
+    | '/admin/configuracoes'
+    | '/admin/dashboard'
+    | '/admin/login'
     | '/orcamentos/$id'
+    | '/admin'
     | '/orcamentos'
+    | '/admin/empresas/$empresaId'
     | '/api/cron/billing'
     | '/api/webhooks/woovi'
+    | '/admin/empresas'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/clientes'
     | '/empresa'
     | '/financeiro'
     | '/kanban'
     | '/plano'
     | '/servicos'
+    | '/admin/configuracoes'
+    | '/admin/dashboard'
+    | '/admin/login'
     | '/orcamentos/$id'
+    | '/admin/'
     | '/orcamentos/'
+    | '/admin/empresas/$empresaId'
     | '/api/cron/billing'
     | '/api/webhooks/woovi'
+    | '/admin/empresas/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   ClientesRoute: typeof ClientesRoute
   EmpresaRoute: typeof EmpresaRoute
   FinanceiroRoute: typeof FinanceiroRoute
@@ -217,6 +300,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -231,12 +321,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrcamentosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/orcamentos/$id': {
       id: '/orcamentos/$id'
       path: '/orcamentos/$id'
       fullPath: '/orcamentos/$id'
       preLoaderRoute: typeof OrcamentosIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/configuracoes': {
+      id: '/admin/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/admin/configuracoes'
+      preLoaderRoute: typeof AdminConfiguracoesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/empresas/': {
+      id: '/admin/empresas/'
+      path: '/empresas'
+      fullPath: '/admin/empresas/'
+      preLoaderRoute: typeof AdminEmpresasIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/api/webhooks/woovi': {
       id: '/api/webhooks/woovi'
@@ -252,11 +377,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/empresas/$empresaId': {
+      id: '/admin/empresas/$empresaId'
+      path: '/empresas/$empresaId'
+      fullPath: '/admin/empresas/$empresaId'
+      preLoaderRoute: typeof AdminEmpresasEmpresaIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminEmpresasEmpresaIdRoute: typeof AdminEmpresasEmpresaIdRoute
+  AdminEmpresasIndexRoute: typeof AdminEmpresasIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminConfiguracoesRoute: AdminConfiguracoesRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminEmpresasEmpresaIdRoute: AdminEmpresasEmpresaIdRoute,
+  AdminEmpresasIndexRoute: AdminEmpresasIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   ClientesRoute: ClientesRoute,
   EmpresaRoute: EmpresaRoute,
   FinanceiroRoute: FinanceiroRoute,
