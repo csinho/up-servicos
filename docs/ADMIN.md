@@ -6,7 +6,8 @@ Operador da plataforma gerencia **empresas** (tenants), billing e configuraçõe
 
 | Rota | Função |
 |------|--------|
-| `/admin/login` | Login OTP (WhatsApp na allowlist) |
+| `/login` | Login unificado — admin (allowlist) ou empresa |
+| `/admin/login` | Redireciona para `/login` |
 | `/admin/dashboard` | Métricas agregadas |
 | `/admin/empresas` | Listagem de todas as empresas |
 | `/admin/empresas/{id}` | Detalhe + histórico de pagamentos |

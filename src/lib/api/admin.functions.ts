@@ -7,7 +7,10 @@ import {
 } from "@/lib/admin/allowlist.server";
 import { listarEmpresasAdmin, obterEmpresaAdmin, setEmpresaPausadaAdmin } from "@/lib/admin/empresas.server";
 import { getAdminDashboard } from "@/lib/admin/metrics.server";
-import { confirmAdminLoginOtp, requestAdminLoginOtp } from "@/lib/admin/otp.server";
+import {
+  confirmAdminLoginOtpUnified,
+  requestAdminLoginOtpUnified,
+} from "@/lib/auth/empresa-auth.server";
 import {
   getAdminSettings,
   saveAdminBillingPlan,
@@ -32,7 +35,7 @@ export const requestAdminLoginOtpRemote = createServerFn({ method: "POST" })
   .inputValidator((data: { whatsapp: string }) => data)
   .handler(async ({ data }) => {
     const whatsapp = normalizeWhatsapp11(data.whatsapp);
-    return requestAdminLoginOtp(whatsapp);
+    return requestAdminLoginOtpUnified(whatsapp);
   });
 
 export const confirmAdminLoginOtpRemote = createServerFn({ method: "POST" })
@@ -41,7 +44,7 @@ export const confirmAdminLoginOtpRemote = createServerFn({ method: "POST" })
     const whatsapp = normalizeWhatsapp11(data.whatsapp);
     const code = data.code.replace(/\D/g, "");
     if (code.length !== 6) throw new Error("Código deve ter 6 dígitos.");
-    return confirmAdminLoginOtp(whatsapp, code);
+    return confirmAdminLoginOtpUnified(whatsapp, code);
   });
 
 export const listarEmpresasAdminRemote = createServerFn({ method: "POST" })

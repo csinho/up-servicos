@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getEmpresaIdFromSessao } from "@/lib/auth/client-session";
 import type {
   Cliente,
   Empresa,
@@ -21,9 +22,14 @@ function err<T>(data: T | null, error: { message: string } | null): T {
 // ============ Empresa ============
 const EMPRESA_ID = "11111111-1111-1111-1111-111111111111";
 
+function requireEmpresaId(): string {
+  return getEmpresaIdFromSessao() ?? EMPRESA_ID;
+}
+
 export const empresaRepo = {
   async get(): Promise<Empresa> {
-    const { data, error } = await supabase.from("empresas").select("*").maybeSingle();
+    const empresaId = requireEmpresaId();
+    const { data, error } = await supabase.from("empresas").select("*").eq("id", empresaId).maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) {
       return {
@@ -48,8 +54,9 @@ export const empresaRepo = {
     };
   },
   async upsert(e: Empresa): Promise<void> {
+    const empresaId = requireEmpresaId();
     const payload = {
-      id: e.id || EMPRESA_ID,
+      id: e.id || empresaId,
       nome: e.nome,
       logo_url: e.logo_url ?? null,
       documento: e.documento ?? null,
@@ -70,9 +77,11 @@ export const empresaRepo = {
 // ============ Clientes ============
 export const clientesRepo = {
   async list(): Promise<Cliente[]> {
+    const empresaId = requireEmpresaId();
     const { data, error } = await supabase
       .from("clientes")
       .select("*")
+      .eq("empresa_id", empresaId)
       .order("created_at", { ascending: false });
     return err(data, error).map((r: any) => ({
       id: r.id,
@@ -86,8 +95,10 @@ export const clientesRepo = {
     }));
   },
   async upsert(c: Cliente): Promise<void> {
+    const empresaId = requireEmpresaId();
     const { error } = await supabase.from("clientes").upsert({
       id: c.id,
+      empresa_id: empresaId,
       nome: c.nome,
       telefone: c.telefone ?? null,
       email: c.email ?? null,
@@ -106,7 +117,8 @@ export const clientesRepo = {
 // ============ Serviços ============
 export const servicosRepo = {
   async list(): Promise<Servico[]> {
-    const { data, error } = await supabase.from("servicos").select("*").order("nome");
+    const empresaId = requireEmpresaId();
+    const { data, error } = await supabase.from("servicos").select("*").eq("empresa_id", empresaId).order("nome");
     return err(data, error).map((r: any) => ({
       id: r.id,
       nome: r.nome,
@@ -118,8 +130,10 @@ export const servicosRepo = {
     }));
   },
   async upsert(s: Servico): Promise<void> {
+    const empresaId = requireEmpresaId();
     const { error } = await supabase.from("servicos").upsert({
       id: s.id,
+      empresa_id: empresaId,
       nome: s.nome,
       descricao: s.descricao ?? null,
       valor_padrao: s.valor_padrao,
@@ -197,26 +211,32 @@ const ORC_SELECT = "*, orcamento_itens(*), historico_status(*)";
 
 export const orcamentosRepo = {
   async list(): Promise<Orcamento[]> {
+    const empresaId = requireEmpresaId();
     const { data, error } = await supabase
       .from("orcamentos")
       .select(ORC_SELECT)
+      .eq("empresa_id", empresaId)
       .order("data_criacao", { ascending: false });
     return err(data, error).map(mapOrcamento);
   },
   async get(id: string): Promise<Orcamento | null> {
+    const empresaId = requireEmpresaId();
     const { data, error } = await supabase
       .from("orcamentos")
       .select(ORC_SELECT)
       .eq("id", id)
+      .eq("empresa_id", empresaId)
       .maybeSingle();
     if (error) throw new Error(error.message);
     return data ? mapOrcamento(data) : null;
   },
   async upsert(o: Orcamento): Promise<void> {
+    const empresaId = requireEmpresaId();
     const sub = calcSubtotal(o.itens);
     const descontoValor = calcDescontoValor(sub, o.desconto_percentual ?? 0);
     const head: Record<string, unknown> = {
       id: o.id,
+      empresa_id: empresaId,
       numero: o.numero,
       cliente_id: o.cliente_id || null,
       nome_projeto: o.nome_projeto,
@@ -264,6 +284,7 @@ export const orcamentosRepo = {
       const total = calcTotal(o);
       const payload = {
         tipo: "receber" as const,
+        empresa_id: empresaId,
         descricao: `Pedido — ${o.nome_projeto} (${o.numero})`,
         cliente_id: o.cliente_id || null,
         orcamento_id: o.id,
@@ -299,6 +320,7 @@ export const orcamentosRepo = {
     if (error) throw new Error(error.message);
   },
   async move(id: string, status: StatusOrcamento): Promise<void> {
+    const empresaId = requireEmpresaId();
     const atual = await this.get(id);
     if (!atual || atual.status === status) return;
 
@@ -332,6 +354,7 @@ export const orcamentosRepo = {
       if (!existentes || existentes.length === 0) {
         const { error: eFin } = await supabase.from("financeiro").insert({
           tipo: "receber",
+          empresa_id: empresaId,
           descricao: `Pedido — ${atual.nome_projeto} (${atual.numero})`,
           cliente_id: atual.cliente_id || null,
           orcamento_id: id,
@@ -373,9 +396,11 @@ export const orcamentosRepo = {
 // ============ Financeiro ============
 export const financeiroRepo = {
   async list(): Promise<Financeiro[]> {
+    const empresaId = requireEmpresaId();
     const { data, error } = await supabase
       .from("financeiro")
       .select("*")
+      .eq("empresa_id", empresaId)
       .order("vencimento", { ascending: true });
     return err(data, error).map((r: any) => ({
       id: r.id,
@@ -392,8 +417,10 @@ export const financeiroRepo = {
     }));
   },
   async upsert(f: Financeiro): Promise<void> {
+    const empresaId = requireEmpresaId();
     const { error } = await supabase.from("financeiro").upsert({
       id: f.id,
+      empresa_id: empresaId,
       tipo: f.tipo,
       descricao: f.descricao,
       cliente_id: f.cliente_id ?? null,

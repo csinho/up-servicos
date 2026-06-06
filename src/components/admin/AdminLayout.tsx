@@ -11,7 +11,7 @@ import { AdminRefreshProvider } from "@/components/admin/admin-refresh-context";
 import { RequireAdmin } from "@/components/admin/RequireAdmin";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { clearClientSessao } from "@/lib/auth/client-session";
+import { logoutClient } from "@/lib/auth/client-auth";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -56,8 +56,9 @@ export function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [menuOpen, setMenuOpen] = useState(false);
   const logout = () => {
-    clearClientSessao();
-    window.location.href = "/admin/login";
+    void logoutClient().then(() => {
+      window.location.href = "/login";
+    });
   };
 
   return (

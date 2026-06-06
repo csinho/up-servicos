@@ -10,7 +10,9 @@ import {
   Building2,
   Menu,
   CreditCard,
+  LogOut,
 } from "lucide-react";
+import { logoutClient } from "@/lib/auth/client-auth";
 import { EmpresaBillingBanner } from "@/components/empresa/EmpresaBillingBanner";
 import { cn } from "@/lib/utils";
 import { useEmpresaBranding } from "@/hooks/use-empresa-branding";
@@ -74,6 +76,17 @@ export function AppShell() {
         <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
           <NavLinks pathname={pathname} />
         </nav>
+        <div className="shrink-0 p-3 border-t">
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full justify-start gap-2"
+            onClick={() => void logoutClient().then(() => { window.location.href = "/login"; })}
+          >
+            <LogOut className="h-4 w-4" />
+            Sair
+          </Button>
+        </div>
         <div className="shrink-0 p-4 border-t bg-muted/20">
           {logoUrl ? (
             <div className="flex flex-col items-center gap-2">

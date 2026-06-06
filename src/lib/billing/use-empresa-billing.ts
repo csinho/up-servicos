@@ -4,12 +4,14 @@ import {
   gerarPixPlanoRemote,
   obterBillingStatusRemote,
 } from "@/lib/api/billing.functions";
+import { getEmpresaIdFromSessao } from "@/lib/auth/client-session";
 import { startFreelaRealtime, stopFreelaRealtime } from "@/lib/supabase/realtime";
 import type { BillingUiState } from "./types";
 
 const POLL_MS = 5000;
 
-export function useEmpresaBilling(empresaId?: string) {
+export function useEmpresaBilling(empresaIdProp?: string) {
+  const empresaId = empresaIdProp ?? getEmpresaIdFromSessao() ?? undefined;
   const [billing, setBilling] = useState<BillingUiState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);

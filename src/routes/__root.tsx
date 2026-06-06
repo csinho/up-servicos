@@ -9,6 +9,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
+import { RequireEmpresa } from "@/components/auth/RequireEmpresa";
 import { Toaster } from "@/components/ui/sonner";
 
 
@@ -116,15 +117,27 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+const PUBLIC_PATHS = ["/login", "/cadastro/empresa"];
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const isAdminRoute = useRouterState({
-    select: (s) => s.location.pathname.startsWith("/admin"),
-  });
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdminRoute = pathname.startsWith("/admin");
+  const isPublic = isPublicPath(pathname);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {isAdminRoute ? <Outlet /> : <AppShell />}
+      {isAdminRoute || isPublic ? (
+        <Outlet />
+      ) : (
+        <RequireEmpresa>
+          <AppShell />
+        </RequireEmpresa>
+      )}
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
   );

@@ -14,5 +14,9 @@ const SUPABASE_URL = requireViteEnv("VITE_SUPABASE_URL");
 const SUPABASE_PUBLISHABLE_KEY = requireViteEnv("VITE_SUPABASE_PUBLISHABLE_KEY");
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: { persistSession: false },
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false,
+  },
 });

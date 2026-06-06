@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as PlanoRouteImport } from './routes/plano'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as KanbanRouteImport } from './routes/kanban'
 import { Route as FinanceiroRouteImport } from './routes/financeiro'
 import { Route as EmpresaRouteImport } from './routes/empresa'
@@ -20,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrcamentosIndexRouteImport } from './routes/orcamentos.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as OrcamentosIdRouteImport } from './routes/orcamentos.$id'
+import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
@@ -36,6 +38,11 @@ const ServicosRoute = ServicosRouteImport.update({
 const PlanoRoute = PlanoRouteImport.update({
   id: '/plano',
   path: '/plano',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KanbanRoute = KanbanRouteImport.update({
@@ -83,6 +90,11 @@ const OrcamentosIdRoute = OrcamentosIdRouteImport.update({
   path: '/orcamentos/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CadastroEmpresaRoute = CadastroEmpresaRouteImport.update({
+  id: '/cadastro/empresa',
+  path: '/cadastro/empresa',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -126,11 +138,13 @@ export interface FileRoutesByFullPath {
   '/empresa': typeof EmpresaRoute
   '/financeiro': typeof FinanceiroRoute
   '/kanban': typeof KanbanRoute
+  '/login': typeof LoginRoute
   '/plano': typeof PlanoRoute
   '/servicos': typeof ServicosRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/orcamentos/$id': typeof OrcamentosIdRoute
   '/admin/': typeof AdminIndexRoute
   '/orcamentos/': typeof OrcamentosIndexRoute
@@ -145,11 +159,13 @@ export interface FileRoutesByTo {
   '/empresa': typeof EmpresaRoute
   '/financeiro': typeof FinanceiroRoute
   '/kanban': typeof KanbanRoute
+  '/login': typeof LoginRoute
   '/plano': typeof PlanoRoute
   '/servicos': typeof ServicosRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/orcamentos/$id': typeof OrcamentosIdRoute
   '/admin': typeof AdminIndexRoute
   '/orcamentos': typeof OrcamentosIndexRoute
@@ -166,11 +182,13 @@ export interface FileRoutesById {
   '/empresa': typeof EmpresaRoute
   '/financeiro': typeof FinanceiroRoute
   '/kanban': typeof KanbanRoute
+  '/login': typeof LoginRoute
   '/plano': typeof PlanoRoute
   '/servicos': typeof ServicosRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/orcamentos/$id': typeof OrcamentosIdRoute
   '/admin/': typeof AdminIndexRoute
   '/orcamentos/': typeof OrcamentosIndexRoute
@@ -188,11 +206,13 @@ export interface FileRouteTypes {
     | '/empresa'
     | '/financeiro'
     | '/kanban'
+    | '/login'
     | '/plano'
     | '/servicos'
     | '/admin/configuracoes'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/cadastro/empresa'
     | '/orcamentos/$id'
     | '/admin/'
     | '/orcamentos/'
@@ -207,11 +227,13 @@ export interface FileRouteTypes {
     | '/empresa'
     | '/financeiro'
     | '/kanban'
+    | '/login'
     | '/plano'
     | '/servicos'
     | '/admin/configuracoes'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/cadastro/empresa'
     | '/orcamentos/$id'
     | '/admin'
     | '/orcamentos'
@@ -227,11 +249,13 @@ export interface FileRouteTypes {
     | '/empresa'
     | '/financeiro'
     | '/kanban'
+    | '/login'
     | '/plano'
     | '/servicos'
     | '/admin/configuracoes'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/cadastro/empresa'
     | '/orcamentos/$id'
     | '/admin/'
     | '/orcamentos/'
@@ -248,8 +272,10 @@ export interface RootRouteChildren {
   EmpresaRoute: typeof EmpresaRoute
   FinanceiroRoute: typeof FinanceiroRoute
   KanbanRoute: typeof KanbanRoute
+  LoginRoute: typeof LoginRoute
   PlanoRoute: typeof PlanoRoute
   ServicosRoute: typeof ServicosRoute
+  CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   OrcamentosIdRoute: typeof OrcamentosIdRoute
   OrcamentosIndexRoute: typeof OrcamentosIndexRoute
   ApiCronBillingRoute: typeof ApiCronBillingRoute
@@ -270,6 +296,13 @@ declare module '@tanstack/react-router' {
       path: '/plano'
       fullPath: '/plano'
       preLoaderRoute: typeof PlanoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kanban': {
@@ -333,6 +366,13 @@ declare module '@tanstack/react-router' {
       path: '/orcamentos/$id'
       fullPath: '/orcamentos/$id'
       preLoaderRoute: typeof OrcamentosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro/empresa': {
+      id: '/cadastro/empresa'
+      path: '/cadastro/empresa'
+      fullPath: '/cadastro/empresa'
+      preLoaderRoute: typeof CadastroEmpresaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/login': {
@@ -414,8 +454,10 @@ const rootRouteChildren: RootRouteChildren = {
   EmpresaRoute: EmpresaRoute,
   FinanceiroRoute: FinanceiroRoute,
   KanbanRoute: KanbanRoute,
+  LoginRoute: LoginRoute,
   PlanoRoute: PlanoRoute,
   ServicosRoute: ServicosRoute,
+  CadastroEmpresaRoute: CadastroEmpresaRoute,
   OrcamentosIdRoute: OrcamentosIdRoute,
   OrcamentosIndexRoute: OrcamentosIndexRoute,
   ApiCronBillingRoute: ApiCronBillingRoute,
