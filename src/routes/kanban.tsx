@@ -13,6 +13,7 @@ import {
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Search, X } from "lucide-react";
+import { pageTitle } from "@/lib/app-brand";
 import { billingBlocksMutation } from "@/lib/billing/state";
 import { useEmpresaBilling } from "@/lib/billing/use-empresa-billing";
 import { useOrcamentos, useClientes, useFinanceiro, useMoveOrcamento } from "@/lib/store";
@@ -34,7 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/kanban")({
-  head: () => ({ meta: [{ title: "Kanban — Freela OS" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Kanban") }] }),
   component: KanbanPage,
 });
 

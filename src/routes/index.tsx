@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { pageTitle } from "@/lib/app-brand";
 import { useOrcamentos, useFinanceiro } from "@/lib/store";
 import {
   calcTotal,
@@ -13,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [{ title: "Dashboard — Freela OS" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Dashboard") }] }),
   component: Dashboard,
 });
 

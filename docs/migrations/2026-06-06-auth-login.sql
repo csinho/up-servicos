@@ -1,4 +1,4 @@
--- Freela OS — Autenticação (Supabase Auth, OTP, multi-tenant)
+-- Up Serviços — Autenticação (Supabase Auth, OTP, multi-tenant)
 -- Execute após 2026-06-06-admin-panel.sql
 
 -- ============ auth_user_id em empresas ============

@@ -1,4 +1,4 @@
--- Freela OS — Billing Woovi (assinatura SaaS)
+-- Up Serviços — Billing Woovi (assinatura SaaS)
 -- Execute no SQL Editor do Supabase após setup-supabase.sql
 
 -- ============ Colunas em empresas ============

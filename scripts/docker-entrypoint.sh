@@ -36,7 +36,7 @@ cd dist/server
   [ -n "$WOOVI_API_URL" ] && echo "WOOVI_API_URL=$WOOVI_API_URL"
 } > .dev.vars
 
-echo "Iniciando Freela OS na porta $PORT (worker: ${ENTRY:-index.js})..."
+echo "Iniciando Up Serviços na porta $PORT (worker: ${ENTRY:-index.js})..."
 
 exec npx wrangler dev index.js \
   --config wrangler.json \

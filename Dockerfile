@@ -1,4 +1,4 @@
-# Freela OS — TanStack Start (SSR via Wrangler no container)
+# Up Serviços — TanStack Start (SSR via Wrangler no container)
 
 FROM node:22-bookworm-slim AS builder
 

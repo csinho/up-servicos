@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { pageTitle } from "@/lib/app-brand";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { useEmpresa, useSaveEmpresa } from "@/lib/store";
@@ -29,7 +30,7 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/empresa")({
-  head: () => ({ meta: [{ title: "Empresa — Freela OS" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Empresa") }] }),
   component: EmpresaPage,
 });
 

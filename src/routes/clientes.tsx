@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { pageTitle } from "@/lib/app-brand";
 import { useMemo, useState } from "react";
 import { useClientes, useUpsertCliente, useRemoveCliente } from "@/lib/store";
 import type { Cliente } from "@/lib/types";
@@ -31,7 +32,7 @@ import { ListCard } from "@/components/list-card";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export const Route = createFileRoute("/clientes")({
-  head: () => ({ meta: [{ title: "Clientes — Freela OS" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Clientes") }] }),
   component: ClientesPage,
 });
 

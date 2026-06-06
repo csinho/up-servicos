@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { pageTitle } from "@/lib/app-brand";
 import { useState } from "react";
 import { useFinanceiro, useClientes, useOrcamentos } from "@/lib/store";
 import type { TipoFinanceiro } from "@/lib/types";
@@ -23,7 +24,7 @@ import { PageHeader } from "@/components/page-header";
 import { ListCard } from "@/components/list-card";
 
 export const Route = createFileRoute("/financeiro")({
-  head: () => ({ meta: [{ title: "Financeiro — Freela OS" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Financeiro") }] }),
   component: FinanceiroPage,
 });
 

@@ -7,6 +7,7 @@ import {
   Menu,
   Settings,
 } from "lucide-react";
+import { AppLogo } from "@/components/AppLogo";
 import { AdminRefreshProvider } from "@/components/admin/admin-refresh-context";
 import { RequireAdmin } from "@/components/admin/RequireAdmin";
 import { Button } from "@/components/ui/button";
@@ -67,7 +68,7 @@ export function AdminLayout() {
       <div className="flex min-h-screen w-full bg-muted/30">
         <aside className="hidden md:flex w-60 flex-col border-r bg-card min-h-0 shrink-0">
           <div className="h-14 flex items-center px-5 border-b shrink-0">
-            <span className="font-semibold tracking-tight">Freela OS Admin</span>
+            <AppLogo variant="admin" size="compact" />
           </div>
           <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
             <NavLinks pathname={pathname} />
@@ -96,7 +97,7 @@ export function AdminLayout() {
               <SheetContent side="left" className="w-[min(100vw-2rem,18rem)] p-0 flex flex-col">
                 <SheetTitle className="sr-only">Menu admin</SheetTitle>
                 <div className="h-14 flex items-center px-5 border-b shrink-0">
-                  <span className="font-semibold">Freela OS Admin</span>
+                  <AppLogo variant="admin" size="compact" />
                 </div>
                 <nav className="flex-1 overflow-y-auto p-3 space-y-1">
                   <NavLinks

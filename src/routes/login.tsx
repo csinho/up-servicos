@@ -10,6 +10,8 @@ import {
 import { applyAuthSession } from "@/lib/auth/client-auth";
 import { getClientSessao, isAdminSessao, isEmpresaSessao } from "@/lib/auth/client-session";
 import type { LoginRole } from "@/lib/auth/types";
+import { AppLogo } from "@/components/AppLogo";
+import { APP_NAME, pageTitle } from "@/lib/app-brand";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,7 +21,7 @@ import {
 } from "@/components/ui/input-otp";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Login — Freela OS" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Login") }] }),
   component: LoginPage,
 });
 
@@ -101,9 +103,10 @@ function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Freela OS</CardTitle>
-          <CardDescription>
+        <CardHeader className="space-y-4">
+          <AppLogo className="mx-auto" />
+          <CardTitle className="sr-only">{APP_NAME}</CardTitle>
+          <CardDescription className="text-center">
             Entre com seu WhatsApp. O código chega por mensagem.
           </CardDescription>
         </CardHeader>

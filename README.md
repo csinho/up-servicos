@@ -1,4 +1,4 @@
-# Freela OS
+# Up Serviços
 
 Sistema para gerenciar orçamentos, pedidos, clientes, serviços e financeiro — com Kanban e PDF.
 

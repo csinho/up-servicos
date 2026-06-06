@@ -4,11 +4,12 @@ import { EmpresaPlanoPagamentosList } from "@/components/empresa/EmpresaPlanoPag
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { APP_NAME, pageTitle } from "@/lib/app-brand";
 import { formatDatePt } from "@/lib/billing/dates";
 import { useEmpresaBilling } from "@/lib/billing/use-empresa-billing";
 
 export const Route = createFileRoute("/plano")({
-  head: () => ({ meta: [{ title: "Plano — Freela OS" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Plano") }] }),
   component: PlanoPage,
 });
 
@@ -24,7 +25,7 @@ function PlanoPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <PageHeader
-        title="Plano Freela OS"
+        title={`Plano ${APP_NAME}`}
         description={
           billing
             ? `Assinatura mensal via PIX — trial de ${billing.trialDays} dias, depois ${billing.planLabel}.`

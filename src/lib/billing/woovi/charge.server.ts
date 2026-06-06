@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/app-brand";
 import { getBillingPlanValueCents } from "@/lib/admin/system-settings.server";
 import { CHARGE_EXPIRES_SECONDS } from "../constants";
 import { wooviFetch } from "./client.server";
@@ -36,7 +37,7 @@ export async function createWooviPlanCharge(input: {
     style: "currency",
     currency: "BRL",
   });
-  const comment = wooviChargeComment(`Freela OS - Plano mensal ${planLabel}/mês`);
+  const comment = wooviChargeComment(`${APP_NAME} - Plano mensal ${planLabel}/mês`);
 
   const payload = {
     correlationID,

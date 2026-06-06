@@ -132,5 +132,5 @@ export async function baixarReciboPagamento(input: {
   for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]!);
   const base64 = btoa(binary);
   const date = (payment.paid_at as string).slice(0, 10);
-  return { filename: `recibo-freela-os-${date}.pdf`, base64 };
+  return { filename: `recibo-up-servicos-${date}.pdf`, base64 };
 }

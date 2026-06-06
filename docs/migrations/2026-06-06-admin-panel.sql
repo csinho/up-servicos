@@ -1,4 +1,4 @@
--- Freela OS — Painel administrativo (empresas, system_settings, OTP admin)
+-- Up Serviços — Painel administrativo (empresas, system_settings, OTP admin)
 -- Execute no SQL Editor do Supabase após 2026-06-05-empresa-billing.sql
 
 -- ============ Status operacional em empresas ============

@@ -1,3 +1,4 @@
+import { APP_NAME, APP_NAME_ADMIN } from "@/lib/app-brand";
 import { getSupabaseServer } from "@/integrations/supabase/server";
 import { isAdminWhatsappAllowed } from "@/lib/admin/allowlist.server";
 import type { AdminSessao } from "@/lib/admin/types";
@@ -151,7 +152,7 @@ async function sendLoginOtpMessage(
   env?: Record<string, string | undefined>,
 ): Promise<{ ok: true; message: string; mockCode?: string }> {
   const code = await saveOtp(whatsapp11, purpose, env);
-  const label = purpose === "admin_login" ? "Freela OS Admin" : "Freela OS";
+  const label = purpose === "admin_login" ? APP_NAME_ADMIN : APP_NAME;
   const text = `*${label}* — Seu código de acesso: *${code}*\nVálido por 10 minutos. Não compartilhe.`;
 
   await sendOtpText(whatsapp11, text, env);

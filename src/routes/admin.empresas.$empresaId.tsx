@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { adminPageTitle } from "@/lib/app-brand";
 import { useAdminRefreshTick } from "@/components/admin/admin-refresh-context";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -13,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Route = createFileRoute("/admin/empresas/$empresaId")({
-  head: () => ({ meta: [{ title: "Detalhe empresa — Admin Freela OS" }] }),
+  head: () => ({ meta: [{ title: adminPageTitle("Detalhe empresa") }] }),
   component: AdminEmpresaDetalhePage,
 });
 

@@ -1,6 +1,6 @@
-# Billing — Assinatura Woovi (Freela OS)
+# Billing — Assinatura Woovi (Up Serviços)
 
-Assinatura mensal do **próprio Freela OS** via PIX (Woovi/OpenPix). Não confundir com cobrança de pedidos dos clientes do freelancer.
+Assinatura mensal do **próprio Up Serviços** via PIX (Woovi/OpenPix). Não confundir com cobrança de pedidos dos clientes do freelancer.
 
 ## Modelo
 

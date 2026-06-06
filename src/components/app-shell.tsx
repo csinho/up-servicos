@@ -12,7 +12,9 @@ import {
   CreditCard,
   LogOut,
 } from "lucide-react";
+import { APP_NAME } from "@/lib/app-brand";
 import { logoutClient } from "@/lib/auth/client-auth";
+import { AppLogo } from "@/components/AppLogo";
 import { EmpresaBillingBanner } from "@/components/empresa/EmpresaBillingBanner";
 import { cn } from "@/lib/utils";
 import { useEmpresaBranding } from "@/hooks/use-empresa-branding";
@@ -58,7 +60,7 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
 
 function currentPageTitle(pathname: string): string {
   const item = NAV.find((n) => (n.to === "/" ? pathname === "/" : pathname.startsWith(n.to)));
-  return item?.short ?? "Freela OS";
+  return item?.short ?? APP_NAME;
 }
 
 export function AppShell() {
@@ -71,7 +73,11 @@ export function AppShell() {
     <div className="flex min-h-screen w-full bg-muted/30">
       <aside className="hidden md:flex w-60 flex-col border-r bg-card min-h-0 shrink-0">
         <div className="h-14 flex items-center px-5 border-b shrink-0">
-          <span className="font-semibold tracking-tight truncate">{nome}</span>
+          {nome === APP_NAME ? (
+            <AppLogo size="compact" />
+          ) : (
+            <span className="font-semibold tracking-tight truncate">{nome}</span>
+          )}
         </div>
         <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
           <NavLinks pathname={pathname} />
@@ -125,7 +131,11 @@ export function AppShell() {
             <SheetContent side="left" className="w-[min(100vw-2rem,18rem)] p-0 flex flex-col">
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <div className="h-14 flex items-center px-5 border-b shrink-0">
-                <span className="font-semibold tracking-tight truncate">{nome}</span>
+                {nome === APP_NAME ? (
+                  <AppLogo size="compact" />
+                ) : (
+                  <span className="font-semibold tracking-tight truncate">{nome}</span>
+                )}
               </div>
               <nav className="flex-1 overflow-y-auto p-3 space-y-1">
                 <NavLinks pathname={pathname} onNavigate={() => setMenuOpen(false)} />

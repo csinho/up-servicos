@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { adminPageTitle } from "@/lib/app-brand";
 import { getAdminDashboardRemote } from "@/lib/api/admin.functions";
 import type { AdminDashboardMetrics } from "@/lib/admin/types";
 import { getClientSessao } from "@/lib/auth/client-session";
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useAdminRefreshTick } from "@/components/admin/admin-refresh-context";
 
 export const Route = createFileRoute("/admin/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard Admin — Freela OS" }] }),
+  head: () => ({ meta: [{ title: adminPageTitle("Dashboard") }] }),
   component: AdminDashboardPage,
 });
 

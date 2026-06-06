@@ -13,6 +13,7 @@ import { RequireEmpresa } from "@/components/auth/RequireEmpresa";
 import { Toaster } from "@/components/ui/sonner";
 
 
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/app-brand";
 import appCss from "../styles.css?url";
 
 
@@ -78,10 +79,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Freela OS" },
-      { name: "description", content: "Gestão de orçamentos, pedidos e financeiro para freelancers" },
-      { property: "og:title", content: "Freela OS" },
-      { property: "og:description", content: "Gestão de orçamentos, pedidos e financeiro para freelancers" },
+      { title: APP_NAME },
+      { name: "description", content: APP_DESCRIPTION },
+      { property: "og:title", content: APP_NAME },
+      { property: "og:description", content: APP_DESCRIPTION },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

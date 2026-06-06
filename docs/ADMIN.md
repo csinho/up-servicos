@@ -1,4 +1,4 @@
-# Painel administrativo — Freela OS
+# Painel administrativo — Up Serviços
 
 Operador da plataforma gerencia **empresas** (tenants), billing e configurações globais.
 

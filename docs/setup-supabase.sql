@@ -1,5 +1,5 @@
 -- =====================================================================
--- Freela OS — Setup completo do Supabase
+-- Up Serviços — Setup completo do Supabase
 -- Cole tudo no SQL Editor do seu projeto e execute uma única vez.
 -- =====================================================================
 

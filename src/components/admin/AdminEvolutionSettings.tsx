@@ -113,7 +113,7 @@ export function AdminEvolutionSettings({ settings, onUpdated }: Props) {
           <Label htmlFor="evo-instance">Nome da instância</Label>
           <Input
             id="evo-instance"
-            placeholder="erp-freela-os-producao"
+            placeholder="erp-up-servicos-producao"
             value={instanceName}
             onChange={(e) => setInstanceName(e.target.value)}
           />

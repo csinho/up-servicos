@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/app-brand";
 import { formatDatePt } from "./dates";
 
 export type BillingNotificationKind =
@@ -20,15 +21,15 @@ function buildMessage(payload: BillingNotificationPayload): string {
   const next = payload.nextBillingAt ? formatDatePt(payload.nextBillingAt) : "—";
   switch (payload.kind) {
     case "trial_reminder":
-      return `[Freela OS] Seu trial termina em ${payload.daysUntilDue} dia(s). Acesse /plano para pagar via PIX.`;
+      return `[${APP_NAME}] Seu trial termina em ${payload.daysUntilDue} dia(s). Acesse /plano para pagar via PIX.`;
     case "renewal_reminder":
-      return `[Freela OS] Renovação do plano em ${payload.daysUntilDue} dia(s) (${next}). Pague antecipado em /plano.`;
+      return `[${APP_NAME}] Renovação do plano em ${payload.daysUntilDue} dia(s) (${next}). Pague antecipado em /plano.`;
     case "payment_confirmed":
-      return `[Freela OS] Pagamento confirmado! Próxima cobrança: ${next}.`;
+      return `[${APP_NAME}] Pagamento confirmado! Próxima cobrança: ${next}.`;
     case "payment_pending":
-      return `[Freela OS] Pagamento pendente. Gere o PIX em /plano para continuar usando o sistema.`;
+      return `[${APP_NAME}] Pagamento pendente. Gere o PIX em /plano para continuar usando o sistema.`;
     default:
-      return `[Freela OS] Atualização de plano.`;
+      return `[${APP_NAME}] Atualização de plano.`;
   }
 }
 

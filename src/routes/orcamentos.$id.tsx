@@ -10,6 +10,7 @@ import {
   useMoveOrcamento,
   novoItem,
 } from "@/lib/store";
+import { pageTitle } from "@/lib/app-brand";
 import { clearOrcamentoDraft, loadOrcamentoDraft } from "@/lib/orcamento-draft";
 import type { Cliente, Empresa, Orcamento, OrcamentoItem, StatusOrcamento } from "@/lib/types";
 import {
@@ -64,7 +65,7 @@ function ClientOnlyPDF({ kind, ...props }: PdfProps & { kind: "preview" | "downl
 }
 
 export const Route = createFileRoute("/orcamentos/$id")({
-  head: () => ({ meta: [{ title: "Orçamento / Pedido — Freela OS" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Orçamento / Pedido") }] }),
   component: OrcamentoDetail,
 });
 

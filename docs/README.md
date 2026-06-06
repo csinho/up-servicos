@@ -1,4 +1,4 @@
-# Freela OS — Documentação
+# Up Serviços — Documentação
 
 Sistema interno para gerenciar **orçamentos, pedidos, clientes, serviços e financeiro** de freelancer, com Kanban e geração de PDF profissional.
 

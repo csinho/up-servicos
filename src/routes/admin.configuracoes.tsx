@@ -6,6 +6,7 @@ import {
   saveAdminBillingPlanRemote,
   saveAdminContactWhatsappRemote,
 } from "@/lib/api/admin.functions";
+import { adminPageTitle } from "@/lib/app-brand";
 import type { AdminSettings } from "@/lib/admin/types";
 import { useAdminRefreshTick } from "@/components/admin/admin-refresh-context";
 import { getClientSessao } from "@/lib/auth/client-session";
@@ -17,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/admin/configuracoes")({
-  head: () => ({ meta: [{ title: "Configurações — Admin Freela OS" }] }),
+  head: () => ({ meta: [{ title: adminPageTitle("Configurações") }] }),
   component: AdminConfiguracoesPage,
 });
 

@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { pageTitle } from "@/lib/app-brand";
 import { billingBlocksMutation } from "@/lib/billing/state";
 import { useEmpresaBilling } from "@/lib/billing/use-empresa-billing";
 import { useOrcamentos, useClientes, useEmpresa, gerarNumeroOrcamento } from "@/lib/store";
@@ -22,7 +23,7 @@ import { PageHeader } from "@/components/page-header";
 import { ListCard } from "@/components/list-card";
 
 export const Route = createFileRoute("/orcamentos/")({
-  head: () => ({ meta: [{ title: "Orçamentos e pedidos — Freela OS" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Orçamentos e pedidos") }] }),
   component: OrcamentosList,
 });
 

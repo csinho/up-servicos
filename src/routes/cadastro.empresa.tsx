@@ -4,13 +4,15 @@ import { toast } from "sonner";
 import { PhoneField } from "@/components/auth/PhoneField";
 import { registerEmpresaWithAuthRemote } from "@/lib/api/auth.functions";
 import { applyAuthSession } from "@/lib/auth/client-auth";
+import { AppLogo } from "@/components/AppLogo";
+import { pageTitle } from "@/lib/app-brand";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/cadastro/empresa")({
-  head: () => ({ meta: [{ title: "Criar conta — Freela OS" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Criar conta") }] }),
   component: CadastroEmpresaPage,
 });
 
@@ -45,8 +47,9 @@ function CadastroEmpresaPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Criar conta</CardTitle>
+        <CardHeader className="space-y-4">
+          <AppLogo className="mx-auto" />
+          <CardTitle className="text-center">Criar conta</CardTitle>
           <CardDescription>
             Primeiro acesso — nome da empresa e WhatsApp. Você entra direto no painel.
           </CardDescription>

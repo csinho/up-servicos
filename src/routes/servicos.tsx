@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { pageTitle } from "@/lib/app-brand";
 import { useState } from "react";
 import { useServicos, useUpsertServico, useRemoveServico } from "@/lib/store";
 import type { Servico, UnidadeServico } from "@/lib/types";
@@ -33,7 +34,7 @@ import { ListCard } from "@/components/list-card";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export const Route = createFileRoute("/servicos")({
-  head: () => ({ meta: [{ title: "Serviços — Freela OS" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Serviços") }] }),
   component: ServicosPage,
 });
 
