@@ -23,6 +23,19 @@ fi
 
 cd dist/server
 
+# Wrangler local lê .dev.vars — monta a partir das env do container (EasyPanel)
+{
+  [ -n "$VITE_SUPABASE_URL" ] && echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL"
+  [ -n "$VITE_SUPABASE_PUBLISHABLE_KEY" ] && echo "VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY"
+  [ -n "$SUPABASE_SERVICE_ROLE_KEY" ] && echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY"
+  [ -n "$WOOVI_APP_ID" ] && echo "WOOVI_APP_ID=$WOOVI_APP_ID"
+  [ -n "$WOOVI_CLIENT_ID" ] && echo "WOOVI_CLIENT_ID=$WOOVI_CLIENT_ID"
+  [ -n "$WOOVI_CLIENT_SECRET" ] && echo "WOOVI_CLIENT_SECRET=$WOOVI_CLIENT_SECRET"
+  [ -n "$PUBLIC_APP_URL" ] && echo "PUBLIC_APP_URL=$PUBLIC_APP_URL"
+  [ -n "$BILLING_CRON_SECRET" ] && echo "BILLING_CRON_SECRET=$BILLING_CRON_SECRET"
+  [ -n "$WOOVI_API_URL" ] && echo "WOOVI_API_URL=$WOOVI_API_URL"
+} > .dev.vars
+
 echo "Iniciando Freela OS na porta $PORT (worker: ${ENTRY:-index.js})..."
 
 exec npx wrangler dev index.js \

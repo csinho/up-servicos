@@ -15,6 +15,12 @@ export default defineConfig({
   },
   vite: {
     plugins: [clientOnlyPdfPlugin()],
+    build: {
+      sourcemap: false,
+      rollupOptions: {
+        maxParallelFileOps: 2,
+      },
+    },
     optimizeDeps: {
       include: ["pdfmake/build/pdfmake.js", "pdfmake/build/vfs_fonts.js"],
     },

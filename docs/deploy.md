@@ -1,6 +1,14 @@
-# Deploy — GitHub + EasyPanel
+# Deploy — GitHub + Cloudflare Workers
 
-Este projeto usa **TanStack Start** com build voltado a **SSR** (servidor no bundle de produção). O fluxo abaixo cobre publicação via **GitHub** e **EasyPanel**.
+Este projeto usa **TanStack Start** com SSR no **Cloudflare Workers**. O deploy oficial é via **GitHub Actions**.
+
+**Guia completo:** [DEPLOY-CLOUDFLARE.md](./DEPLOY-CLOUDFLARE.md)
+
+---
+
+## Legado — EasyPanel (descontinuado)
+
+O fluxo abaixo era usado com EasyPanel + Docker. Pode ser ignorado se você migrou para Cloudflare.
 
 ## O que vai no código vs no painel
 
@@ -131,11 +139,25 @@ No EasyPanel, associe domínio e ative TLS. Teste as rotas: `/`, `/orcamentos`, 
 - Variável não foi definida **antes** do `npm run build` no EasyPanel
 - Solução: adicione as duas `VITE_*`, dispare **Rebuild**
 
+### Build trava em `building ssr environment` / `transforming...`
+
+- O SSR do Vite ficou mais pesado com o módulo de billing; VPS com pouca RAM mata o processo nessa fase.
+- Solução: **Rebuild sem cache** com o `Dockerfile` atual (`NODE_OPTIONS=--max-old-space-size=8192`).
+- No EasyPanel, aumente memória do serviço para o build (recomendado **≥ 3 GB**).
+- Confirme que `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` estão nas variáveis de **build**.
+
 ### Build falha em `test -f dist/server/index.js` / `dist/client`
 
 - O `npm run build` terminou sem gerar a pasta `dist/client` (comum em VPS com pouca RAM).
-- Solução: use o `Dockerfile` atualizado (`node:22-bookworm-slim` + `NODE_OPTIONS=--max-old-space-size=4096`), faça push e **Rebuild**.
-- Se persistir, aumente memória do serviço no EasyPanel (≥ 2 GB para o build).
+- Solução: use o `Dockerfile` atualizado, faça push e **Rebuild sem cache**.
+- Se persistir, aumente memória do serviço no EasyPanel (≥ 3 GB para o build).
+
+### Billing não funciona após deploy (plano/webhook 404 ou erro 500)
+
+- O deploy antigo ainda está no ar se `/plano` retorna 404.
+- Cadastre também as variáveis de **runtime** no EasyPanel (não só build):
+  `SUPABASE_SERVICE_ROLE_KEY`, `WOOVI_APP_ID`, `PUBLIC_APP_URL`, `BILLING_CRON_SECRET`
+- O `docker-entrypoint.sh` monta `.dev.vars` a partir dessas envs ao subir o container.
 
 ### `No such module "assets/worker-entry-….js"`
 

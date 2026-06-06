@@ -4,9 +4,10 @@ FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 
-# Vite + PDF precisam de RAM no build (EasyPanel/VPS pequenos falham sem isso)
-ENV NODE_OPTIONS=--max-old-space-size=4096
+# Vite SSR + billing precisam de RAM (EasyPanel/VPS pequenos travam em "transforming...")
+ENV NODE_OPTIONS=--max-old-space-size=8192
 ENV CI=true
+ENV GENERATE_SOURCEMAP=false
 
 COPY package.json package-lock.json* ./
 

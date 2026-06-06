@@ -22,6 +22,9 @@ function writeMinimal(cfg) {
     },
     no_bundle: cfg.no_bundle ?? true,
     rules: cfg.rules?.length ? cfg.rules : DEFAULT_RULES,
+    observability: cfg.observability ?? { enabled: true },
+    triggers: cfg.triggers ?? { crons: ["0 12 * * *"] },
+    vars: cfg.vars ?? {},
   };
   fs.writeFileSync(target, `${JSON.stringify(minimal, null, 2)}\n`);
 }
