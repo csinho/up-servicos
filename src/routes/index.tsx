@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { pageTitle } from "@/lib/app-brand";
+import { DashboardAssistenciaTecnica } from "@/components/dashboard/dashboard-assistencia-tecnica";
+import { useEmpresaCategoria } from "@/hooks/use-empresa-categoria";
 import { useOrcamentos, useFinanceiro } from "@/lib/store";
 import {
   calcTotal,
@@ -21,8 +23,13 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
+  const { isAssistenciaTecnica, isLoading: lc } = useEmpresaCategoria();
   const { data: orcamentos = [], isLoading: lo } = useOrcamentos();
   const { data: financeiro = [], isLoading: lf } = useFinanceiro();
+
+  if (!lc && isAssistenciaTecnica) {
+    return <DashboardAssistenciaTecnica />;
+  }
 
   const totaisPorStatus = orcamentos.reduce<Record<string, { count: number; total: number }>>(
     (acc, o) => {

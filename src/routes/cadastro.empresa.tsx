@@ -1,15 +1,23 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PhoneField } from "@/components/auth/PhoneField";
 import { registerEmpresaWithAuthRemote } from "@/lib/api/auth.functions";
-import { applyAuthSession } from "@/lib/auth/client-auth";
+import { loginAndRedirect } from "@/lib/auth/client-auth";
 import { AppLogo } from "@/components/AppLogo";
 import { pageTitle } from "@/lib/app-brand";
+import { EMPRESA_CATEGORIAS, type EmpresaCategoria } from "@/lib/empresa-categorias";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/cadastro/empresa")({
   head: () => ({ meta: [{ title: pageTitle("Criar conta") }] }),
@@ -17,9 +25,9 @@ export const Route = createFileRoute("/cadastro/empresa")({
 });
 
 function CadastroEmpresaPage() {
-  const navigate = useNavigate();
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [categoria, setCategoria] = useState<EmpresaCategoria>("generico");
   const [loading, setLoading] = useState(false);
 
   const submit = async () => {
@@ -33,16 +41,19 @@ function CadastroEmpresaPage() {
     }
     setLoading(true);
     try {
-      const result = await registerEmpresaWithAuthRemote({ data: { nome, whatsapp } });
-      await applyAuthSession(result.sessao, result.auth);
+      const result = await registerEmpresaWithAuthRemote({
+        data: { nome, whatsapp, categoria },
+      });
       toast.success("Conta criada com sucesso!");
-      void navigate({ to: "/" });
+      await loginAndRedirect(result.sessao, result.auth);
     } catch (e) {
       toast.error((e as Error).message ?? "Falha ao criar conta");
     } finally {
       setLoading(false);
     }
   };
+
+  const categoriaInfo = EMPRESA_CATEGORIAS.find((c) => c.value === categoria);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
@@ -51,7 +62,7 @@ function CadastroEmpresaPage() {
           <AppLogo className="mx-auto" />
           <CardTitle className="text-center">Criar conta</CardTitle>
           <CardDescription>
-            Primeiro acesso — nome da empresa e WhatsApp. Você entra direto no painel.
+            Nome, tipo de negócio e WhatsApp. Você entra direto no painel.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -63,6 +74,24 @@ function CadastroEmpresaPage() {
               onChange={(e) => setNome(e.target.value)}
               placeholder="Sua Empresa Ltda"
             />
+          </div>
+          <div className="space-y-2">
+            <Label>Categoria</Label>
+            <Select value={categoria} onValueChange={(v) => setCategoria(v as EmpresaCategoria)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {EMPRESA_CATEGORIAS.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {categoriaInfo && (
+              <p className="text-xs text-muted-foreground">{categoriaInfo.description}</p>
+            )}
           </div>
           <PhoneField value={whatsapp} onChange={(digits) => setWhatsapp(digits)} />
           <Button type="button" className="w-full" disabled={loading} onClick={() => void submit()}>

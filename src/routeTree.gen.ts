@@ -20,6 +20,7 @@ import { Route as ClientesRouteImport } from './routes/clientes'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrcamentosIndexRouteImport } from './routes/orcamentos.index'
+import { Route as EstoqueIndexRouteImport } from './routes/estoque.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as SetupWhatsappRouteImport } from './routes/setup.whatsapp'
 import { Route as ServicosNovoRouteImport } from './routes/servicos.novo'
@@ -89,6 +90,11 @@ const IndexRoute = IndexRouteImport.update({
 const OrcamentosIndexRoute = OrcamentosIndexRouteImport.update({
   id: '/orcamentos/',
   path: '/orcamentos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstoqueIndexRoute = EstoqueIndexRouteImport.update({
+  id: '/estoque/',
+  path: '/estoque/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/servicos/novo': typeof ServicosNovoRoute
   '/setup/whatsapp': typeof SetupWhatsappRoute
   '/admin/': typeof AdminIndexRoute
+  '/estoque/': typeof EstoqueIndexRoute
   '/orcamentos/': typeof OrcamentosIndexRoute
   '/admin/empresas/$empresaId': typeof AdminEmpresasEmpresaIdRoute
   '/api/cron/billing': typeof ApiCronBillingRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/servicos/novo': typeof ServicosNovoRoute
   '/setup/whatsapp': typeof SetupWhatsappRoute
   '/admin': typeof AdminIndexRoute
+  '/estoque': typeof EstoqueIndexRoute
   '/orcamentos': typeof OrcamentosIndexRoute
   '/admin/empresas/$empresaId': typeof AdminEmpresasEmpresaIdRoute
   '/api/cron/billing': typeof ApiCronBillingRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/servicos/novo': typeof ServicosNovoRoute
   '/setup/whatsapp': typeof SetupWhatsappRoute
   '/admin/': typeof AdminIndexRoute
+  '/estoque/': typeof EstoqueIndexRoute
   '/orcamentos/': typeof OrcamentosIndexRoute
   '/admin/empresas/$empresaId': typeof AdminEmpresasEmpresaIdRoute
   '/api/cron/billing': typeof ApiCronBillingRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/servicos/novo'
     | '/setup/whatsapp'
     | '/admin/'
+    | '/estoque/'
     | '/orcamentos/'
     | '/admin/empresas/$empresaId'
     | '/api/cron/billing'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/servicos/novo'
     | '/setup/whatsapp'
     | '/admin'
+    | '/estoque'
     | '/orcamentos'
     | '/admin/empresas/$empresaId'
     | '/api/cron/billing'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/servicos/novo'
     | '/setup/whatsapp'
     | '/admin/'
+    | '/estoque/'
     | '/orcamentos/'
     | '/admin/empresas/$empresaId'
     | '/api/cron/billing'
@@ -351,6 +363,7 @@ export interface RootRouteChildren {
   CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   OrcamentosIdRoute: typeof OrcamentosIdRoute
   SetupWhatsappRoute: typeof SetupWhatsappRoute
+  EstoqueIndexRoute: typeof EstoqueIndexRoute
   OrcamentosIndexRoute: typeof OrcamentosIndexRoute
   ApiCronBillingRoute: typeof ApiCronBillingRoute
   ApiWebhooksWooviRoute: typeof ApiWebhooksWooviRoute
@@ -433,6 +446,13 @@ declare module '@tanstack/react-router' {
       path: '/orcamentos'
       fullPath: '/orcamentos/'
       preLoaderRoute: typeof OrcamentosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estoque/': {
+      id: '/estoque/'
+      path: '/estoque'
+      fullPath: '/estoque/'
+      preLoaderRoute: typeof EstoqueIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -605,6 +625,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroEmpresaRoute: CadastroEmpresaRoute,
   OrcamentosIdRoute: OrcamentosIdRoute,
   SetupWhatsappRoute: SetupWhatsappRoute,
+  EstoqueIndexRoute: EstoqueIndexRoute,
   OrcamentosIndexRoute: OrcamentosIndexRoute,
   ApiCronBillingRoute: ApiCronBillingRoute,
   ApiWebhooksWooviRoute: ApiWebhooksWooviRoute,

@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
 import { pageTitle } from "@/lib/app-brand";
-import { MOBILE_HUB_SECTIONS } from "@/lib/mobile-nav";
+import { getMobileHubSections } from "@/lib/mobile-nav";
+import { useEmpresaCategoria } from "@/hooks/use-empresa-categoria";
 import { logoutClient } from "@/lib/auth/client-auth";
 import { getClientSessao, isEmpresaSessao } from "@/lib/auth/client-session";
 import { useEmpresaBranding } from "@/hooks/use-empresa-branding";
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/menu")({
 
 function MenuHubPage() {
   const { nome: empresaNome } = useEmpresaBranding();
+  const { hubSections, isAssistenciaTecnica } = useEmpresaCategoria();
   const [contaNome, setContaNome] = useState(empresaNome);
 
   useEffect(() => {
@@ -39,10 +41,12 @@ function MenuHubPage() {
       </p>
       <div className="space-y-6 md:hidden pb-4">
         <p className="text-sm text-muted-foreground">
-          Orçamentos, clientes, financeiro e configurações da empresa.
+          {isAssistenciaTecnica
+            ? "OS, estoque, clientes, financeiro e configurações."
+            : "Orçamentos, clientes, financeiro e configurações da empresa."}
         </p>
 
-        {MOBILE_HUB_SECTIONS.map((section) => (
+        {hubSections.map((section) => (
           <section key={section.title} className="space-y-3">
             <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/80">
               {section.title}

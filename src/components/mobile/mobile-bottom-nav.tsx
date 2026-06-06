@@ -10,6 +10,7 @@ import {
   normalizePath,
   shouldShowMobileBottomNav,
 } from "@/lib/mobile-nav";
+import { useEmpresaCategoria } from "@/hooks/use-empresa-categoria";
 import { cn } from "@/lib/utils";
 
 type NavTabProps = {
@@ -47,10 +48,11 @@ export function MobileBottomNav() {
   const { data: orcamentos = [] } = useOrcamentos();
   const { data: clientes = [] } = useClientes();
   const { data: empresa } = useEmpresa();
+  const { categoria, isAssistenciaTecnica } = useEmpresaCategoria();
 
   const path = normalizePath(pathname);
 
-  if (!shouldShowMobileBottomNav(path)) return null;
+  if (!shouldShowMobileBottomNav(path, categoria)) return null;
 
   const isHome = path === "/";
   const isMenu = path === "/menu" || isMobileHubChildPage(path);
@@ -76,7 +78,7 @@ export function MobileBottomNav() {
           type="button"
           onClick={criarOrcamento}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-all hover:bg-muted/60 active:scale-95"
-          aria-label="Criar orçamento"
+          aria-label={isAssistenciaTecnica ? "Nova OS" : "Criar orçamento"}
         >
           <FilePlus2 className="h-6 w-6" strokeWidth={2} />
         </button>

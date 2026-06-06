@@ -26,10 +26,9 @@ import {
   formatBRL,
   formatCalendarDate,
   formatDate,
-  STATUS_LABEL,
-  STATUS_ORDER,
-  StatusOrcamento,
 } from "@/lib/types";
+import { getStatusLabel } from "@/lib/empresa-categorias";
+import { useEmpresaCategoria } from "@/hooks/use-empresa-categoria";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -100,6 +99,9 @@ function matchesSearch(o: Orcamento, q: string, clientes: Cliente[]): boolean {
 function KanbanPage() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { config } = useEmpresaCategoria();
+  const statusOrder = config.statusOrder;
+  const billingTrigger = config.billingTriggerStatus;
   const { data: orcamentos = [] } = useOrcamentos();
   const { data: clientes = [] } = useClientes();
   const { data: financeiro = [] } = useFinanceiro();
@@ -130,9 +132,9 @@ function KanbanPage() {
   const onDragStart = (e: DragStartEvent) => setActiveId(String(e.active.id));
   const onDragEnd = (e: DragEndEvent) => {
     setActiveId(null);
-    const over = e.over?.id as StatusOrcamento | undefined;
-    if (over && STATUS_ORDER.includes(over)) {
-      if (over === "em_producao" && billing && billingBlocksMutation(billing)) {
+    const over = e.over?.id as string | undefined;
+    if (over && statusOrder.includes(over)) {
+      if (over === billingTrigger && billing && billingBlocksMutation(billing)) {
         toast.error("Plano pendente — acesse Plano para pagar e aprovar pedidos.");
         return;
       }
@@ -244,13 +246,18 @@ function KanbanPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
           <div className="flex-1 min-h-0 overflow-x-auto pb-1 h-full flex flex-col -mx-1 px-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 flex-1 min-h-0 xl:min-w-[56rem]">
-              {STATUS_ORDER.map((s) => {
+            <div
+              className={`grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 min-h-0 xl:min-w-[56rem] ${
+                statusOrder.length > 4 ? "xl:grid-cols-7" : "xl:grid-cols-4"
+              }`}
+            >
+              {statusOrder.map((s) => {
                 const items = filtered.filter((o) => o.status === s);
                 return (
                   <Column
                     key={s}
                     status={s}
+                    statusLabel={getStatusLabel(s, config.id)}
                     count={items.length}
                     total={items.reduce((a, o) => a + calcTotal(o), 0)}
                   >
@@ -318,11 +325,13 @@ function DateRangeFilter({
 
 function Column({
   status,
+  statusLabel,
   count,
   total,
   children,
 }: {
-  status: StatusOrcamento;
+  status: string;
+  statusLabel: string;
   count: number;
   total: number;
   children: React.ReactNode;
@@ -336,7 +345,7 @@ function Column({
       }`}
     >
       <div className="shrink-0 p-3 border-b bg-muted/60 rounded-t-lg">
-        <div className="font-medium text-sm">{STATUS_LABEL[status]}</div>
+        <div className="font-medium text-sm">{statusLabel}</div>
         <div className="text-xs text-muted-foreground">
           {count} · {formatBRL(total)}
         </div>

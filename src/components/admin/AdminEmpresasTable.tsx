@@ -1,14 +1,28 @@
 import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
+import { Eye } from "lucide-react";
 import { toast } from "sonner";
-import { listarEmpresasAdminRemote, setEmpresaPausadaAdminRemote } from "@/lib/api/admin.functions";
+import {
+  listarEmpresasAdminRemote,
+  setEmpresaCategoriaAdminRemote,
+  setEmpresaPausadaAdminRemote,
+} from "@/lib/api/admin.functions";
 import type { AdminEmpresaListItem } from "@/lib/admin/types";
+import { EMPRESA_CATEGORIAS, normalizeEmpresaCategoria } from "@/lib/empresa-categorias";
+import type { EmpresaCategoria } from "@/lib/empresa-categorias/types";
 import { formatDatePt } from "@/lib/billing/dates";
 import { getClientSessao } from "@/lib/auth/client-session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -34,6 +48,10 @@ export function AdminEmpresasTable({ refreshKey = 0 }: AdminEmpresasTableProps) 
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [savingCategoriaId, setSavingCategoriaId] = useState<string | null>(null);
+
+  const categoriaLabel = (value: EmpresaCategoria) =>
+    EMPRESA_CATEGORIAS.find((c) => c.value === value)?.label ?? value;
 
   const load = useCallback(async () => {
     const sessao = getClientSessao();
@@ -54,6 +72,24 @@ export function AdminEmpresasTable({ refreshKey = 0 }: AdminEmpresasTableProps) 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const salvarCategoria = async (empresa: AdminEmpresaListItem, categoria: EmpresaCategoria) => {
+    if (empresa.categoria === categoria) return;
+    const sessao = getClientSessao();
+    if (!sessao) return;
+    setSavingCategoriaId(empresa.id);
+    try {
+      await setEmpresaCategoriaAdminRemote({
+        data: { adminWhatsapp: sessao.id, empresaId: empresa.id, categoria },
+      });
+      toast.success(`Categoria alterada para ${categoriaLabel(categoria)}.`);
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message ?? "Falha ao salvar categoria");
+    } finally {
+      setSavingCategoriaId(null);
+    }
+  };
 
   const togglePausa = async (empresa: AdminEmpresaListItem) => {
     const sessao = getClientSessao();
@@ -100,25 +136,38 @@ export function AdminEmpresasTable({ refreshKey = 0 }: AdminEmpresasTableProps) 
             <TableRow>
               <TableHead>Nome</TableHead>
               <TableHead>Contato</TableHead>
+              <TableHead>Categoria</TableHead>
               <TableHead>Operacional</TableHead>
               <TableHead>Pagamento</TableHead>
               <TableHead>Vencimento</TableHead>
-              <TableHead className="text-right">Pausar</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map((e) => (
+            {items.map((e) => {
+              const categoria = normalizeEmpresaCategoria(e.categoria);
+              return (
               <TableRow key={e.id}>
-                <TableCell>
-                  <Link
-                    to="/admin/empresas/$empresaId"
-                    params={{ empresaId: e.id }}
-                    className="font-medium hover:underline"
-                  >
-                    {e.nome}
-                  </Link>
-                </TableCell>
+                <TableCell className="font-medium">{e.nome}</TableCell>
                 <TableCell className="text-muted-foreground">{e.telefone ?? "—"}</TableCell>
+                <TableCell>
+                  <Select
+                    value={categoria}
+                    disabled={savingCategoriaId === e.id}
+                    onValueChange={(v) => void salvarCategoria(e, v as EmpresaCategoria)}
+                  >
+                    <SelectTrigger className="h-8 w-[11.5rem] text-xs">
+                      <SelectValue>{categoriaLabel(categoria)}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EMPRESA_CATEGORIAS.map((c) => (
+                        <SelectItem key={c.value} value={c.value}>
+                          {c.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
                 <TableCell>
                   <Badge variant={e.status === "ativo" ? "default" : "secondary"}>
                     {e.status === "ativo" ? "Ativo" : "Pausado"}
@@ -135,15 +184,28 @@ export function AdminEmpresasTable({ refreshKey = 0 }: AdminEmpresasTableProps) 
                     : formatDatePt(e.nextBillingAt)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Switch
-                    checked={e.status === "inativo"}
-                    disabled={togglingId === e.id}
-                    onCheckedChange={() => void togglePausa(e)}
-                    aria-label={e.status === "ativo" ? "Pausar empresa" : "Ativar empresa"}
-                  />
+                  <div className="flex items-center justify-end gap-2">
+                    <Button type="button" variant="outline" size="sm" asChild>
+                      <Link
+                        to="/admin/empresas/$empresaId"
+                        params={{ empresaId: e.id }}
+                        preload="intent"
+                      >
+                        <Eye className="h-3.5 w-3.5 mr-1" />
+                        Detalhes
+                      </Link>
+                    </Button>
+                    <Switch
+                      checked={e.status === "inativo"}
+                      disabled={togglingId === e.id}
+                      onCheckedChange={() => void togglePausa(e)}
+                      aria-label={e.status === "ativo" ? "Pausar empresa" : "Ativar empresa"}
+                    />
+                  </div>
                 </TableCell>
               </TableRow>
-            ))}
+            );
+            })}
           </TableBody>
         </Table>
       )}

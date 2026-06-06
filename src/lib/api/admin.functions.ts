@@ -5,7 +5,12 @@ import {
   isAdminWhatsappAllowed,
   normalizeWhatsapp11,
 } from "@/lib/admin/allowlist.server";
-import { listarEmpresasAdmin, obterEmpresaAdmin, setEmpresaPausadaAdmin } from "@/lib/admin/empresas.server";
+import {
+  listarEmpresasAdmin,
+  obterEmpresaAdmin,
+  setEmpresaCategoriaAdmin,
+  setEmpresaPausadaAdmin,
+} from "@/lib/admin/empresas.server";
 import { getAdminDashboard } from "@/lib/admin/metrics.server";
 import {
   confirmAdminLoginOtpUnified,
@@ -68,6 +73,21 @@ export const obterEmpresaAdminRemote = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await assertFromInput(data.adminWhatsapp);
     return obterEmpresaAdmin(data.empresaId);
+  });
+
+export const setEmpresaCategoriaAdminRemote = createServerFn({ method: "POST" })
+  .inputValidator((data: { adminWhatsapp: string; empresaId: string; categoria: string }) =>
+    adminWhatsappSchema
+      .extend({
+        empresaId: z.string().uuid(),
+        categoria: z.enum(["generico", "assistencia_tecnica"]),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data }) => {
+    await assertFromInput(data.adminWhatsapp);
+    await setEmpresaCategoriaAdmin(data.empresaId, data.categoria);
+    return { ok: true };
   });
 
 export const setEmpresaPausadaAdminRemote = createServerFn({ method: "POST" })

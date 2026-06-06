@@ -7,9 +7,10 @@ import type {
   Financeiro,
   Orcamento,
   OrcamentoItem,
+  Produto,
   Servico,
-  StatusOrcamento,
 } from "./types";
+import { produtosRepo } from "./produtos.repository";
 import { newId } from "./id";
 import { moverOrcamentoComBillingRemote } from "@/lib/api/billing.functions";
 import { getEmpresaIdFromSessao } from "@/lib/auth/client-session";
@@ -28,6 +29,7 @@ const QK = {
   orcamentos: ["orcamentos"] as const,
   orcamento: (id: string) => ["orcamentos", id] as const,
   financeiro: ["financeiro"] as const,
+  produtos: ["produtos"] as const,
 };
 
 const ok = (msg: string) => () => toast.success(msg);
@@ -172,7 +174,7 @@ export function useRemoveOrcamento() {
 export function useMoveOrcamento() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: StatusOrcamento }) =>
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
       moverOrcamentoComBillingRemote({
         data: { id, status, empresaId: getEmpresaIdFromSessao() ?? undefined },
       }),
@@ -236,4 +238,38 @@ export function novoItem(parcial?: Partial<OrcamentoItem>): OrcamentoItem {
     unidade: "serviço",
     ...parcial,
   };
+}
+
+// ============ Produtos (estoque AT) ============
+export const useProdutos = () => {
+  const { enabled, empresaId } = useEmpresaQueryGate();
+  return useQuery({
+    queryKey: empresaId ? [...QK.produtos, empresaId] : QK.produtos,
+    queryFn: () => produtosRepo.list(),
+    enabled,
+  });
+};
+
+export function useUpsertProduto() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (p: Produto) => produtosRepo.upsert(p),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK.produtos });
+      ok("Produto salvo")();
+    },
+    onError: fail("Falha"),
+  });
+}
+
+export function useRemoveProduto() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => produtosRepo.remove(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK.produtos });
+      ok("Produto removido")();
+    },
+    onError: fail("Falha"),
+  });
 }

@@ -12,7 +12,7 @@ import {
 } from "@/lib/store";
 import { pageTitle } from "@/lib/app-brand";
 import { clearOrcamentoDraft, loadOrcamentoDraft } from "@/lib/orcamento-draft";
-import type { Cliente, Empresa, Orcamento, OrcamentoItem, StatusOrcamento } from "@/lib/types";
+import type { Cliente, Empresa, Orcamento, OrcamentoItem } from "@/lib/types";
 import {
   calcDescontoValor,
   calcSubtotal,
@@ -24,14 +24,15 @@ import {
   garantiaUnidadeLabel,
   isDateInputOnOrAfterToday,
   isoToDateInput,
-  labelDocumento,
   todayDateInput,
-  STATUS_LABEL,
-  STATUS_ORDER,
   FORMAS_PAGAMENTO,
   GARANTIA_UNIDADES,
   type GarantiaUnidade,
 } from "@/lib/types";
+import { getStatusLabel, labelDocumento } from "@/lib/empresa-categorias";
+import { useEmpresaCategoria } from "@/hooks/use-empresa-categoria";
+import { OsAparelhoFields } from "@/components/os-assistencia/os-aparelho-fields";
+import { ProdutoEstoquePicker } from "@/components/os-assistencia/produto-estoque-picker";
 import { formatPercentInput, maskPercent, onlyDigits, parsePercent } from "@/lib/validators";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,6 +92,7 @@ function OrcamentoDetail() {
   const { data: clientes = [] } = useClientes();
   const { data: servicos = [] } = useServicos();
   const { data: empresa } = useEmpresa();
+  const { config, isAssistenciaTecnica } = useEmpresaCategoria();
   const upsert = useUpsertOrcamento();
   const remove = useRemoveOrcamento();
   const move = useMoveOrcamento();
@@ -195,9 +197,8 @@ function OrcamentoDetail() {
     });
 
   const onStatusChange = (v: string) => {
-    const status = v as StatusOrcamento;
-    setO({ ...o, status });
-    move.mutate({ id: o.id, status });
+    setO({ ...o, status: v });
+    move.mutate({ id: o.id, status: v });
   };
 
   return (
@@ -214,7 +215,7 @@ function OrcamentoDetail() {
           </Button>
           <div className="min-w-0">
             <div className="text-xs text-muted-foreground font-mono truncate">
-              {labelDocumento(o.status)} · {o.numero}
+              {labelDocumento(o.status, config.id)} · {o.numero}
             </div>
             <h1 className="text-xl font-semibold sm:text-2xl break-words">
               {o.nome_projeto || "Sem nome"}
@@ -274,12 +275,13 @@ function OrcamentoDetail() {
 
       <div className="rounded-xl border bg-card p-4 space-y-3">
         <div className="space-y-1.5">
-          <Label htmlFor="orcamento-status">Etapa do projeto</Label>
+          <Label htmlFor="orcamento-status">
+            {isAssistenciaTecnica ? "Status da OS" : "Etapa do projeto"}
+          </Label>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Define em qual fase está este trabalho. Em <strong>Orçamento</strong> ele ainda é uma
-            proposta; ao passar para <strong>Em produção</strong> vira pedido e o sistema pode gerar
-            lançamentos no financeiro. Use <strong>Vistoria</strong> e <strong>Entregue</strong> para
-            acompanhar a conclusão do serviço.
+            {isAssistenciaTecnica
+              ? "Acompanhe a OS do orçamento até a entrega do aparelho."
+              : "Define em qual fase está este trabalho. Em Orçamento ele ainda é uma proposta."}
           </p>
         </div>
         <Select value={o.status} onValueChange={onStatusChange}>
@@ -287,14 +289,16 @@ function OrcamentoDetail() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {STATUS_ORDER.map((s) => (
+            {config.statusOrder.map((s) => (
               <SelectItem key={s} value={s}>
-                {STATUS_LABEL[s]}
+                {getStatusLabel(s, config.id)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
+
+      {isAssistenciaTecnica && o && <OsAparelhoFields o={o} onChange={(patch) => setO({ ...o, ...patch })} />}
 
       <Card>
           <CardHeader>
@@ -470,6 +474,11 @@ function OrcamentoDetail() {
               <Plus className="h-4 w-4 mr-1" /> Item em branco
             </Button>
           </ServicoCatalogoPicker>
+          {isAssistenciaTecnica && (
+            <div className="pt-2 border-t">
+              <ProdutoEstoquePicker onAdd={(item) => setO({ ...o, itens: [...o.itens, item] })} />
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {o.itens.length === 0 && <p className="text-sm text-muted-foreground">Nenhum item.</p>}

@@ -12,21 +12,13 @@ import { useEmpresaBilling } from "@/lib/billing/use-empresa-billing";
 
 import { useOrcamentos, useClientes, useEmpresa, gerarNumeroOrcamento } from "@/lib/store";
 
-import type { Orcamento, StatusOrcamento } from "@/lib/types";
+import type { Orcamento } from "@/lib/types";
 
-import {
+import { calcTotal, formatBRL, formatDate } from "@/lib/types";
 
-  calcTotal,
+import { getStatusLabel, labelDocumento } from "@/lib/empresa-categorias";
 
-  formatBRL,
-
-  formatDate,
-
-  labelDocumento,
-
-  STATUS_LABEL,
-
-} from "@/lib/types";
+import { useEmpresaCategoria } from "@/hooks/use-empresa-categoria";
 
 import { startNovoOrcamento } from "@/lib/novo-orcamento";
 
@@ -74,11 +66,16 @@ export const Route = createFileRoute("/orcamentos/")({
 
 
 
-function matchesOrcamentoSearch(o: Orcamento, term: string, clienteNome?: string): boolean {
+function matchesOrcamentoSearch(
+  o: Orcamento,
+  term: string,
+  categoria: string | undefined,
+  clienteNome?: string,
+): boolean {
 
-  const statusLabel = STATUS_LABEL[o.status as StatusOrcamento].toLowerCase();
+  const statusLabel = getStatusLabel(o.status, categoria).toLowerCase();
 
-  const docLabel = labelDocumento(o.status as StatusOrcamento).toLowerCase();
+  const docLabel = labelDocumento(o.status, categoria).toLowerCase();
 
   return (
 
@@ -108,6 +105,8 @@ function OrcamentosList() {
 
   const { data: empresa } = useEmpresa();
 
+  const { categoria, config } = useEmpresaCategoria();
+
   const { billing } = useEmpresaBilling();
 
   const navigate = useNavigate();
@@ -126,11 +125,11 @@ function OrcamentosList() {
 
       const cli = clientes.find((c) => c.id === o.cliente_id);
 
-      return matchesOrcamentoSearch(o, term, cli?.nome);
+      return matchesOrcamentoSearch(o, term, categoria, cli?.nome);
 
     });
 
-  }, [orcamentos, clientes, q]);
+  }, [orcamentos, clientes, q, categoria]);
 
 
 
@@ -162,7 +161,7 @@ function OrcamentosList() {
 
       <PageHeader
 
-        title="Orçamentos e pedidos"
+        title={config.orcamentosNavLabel}
 
         description={isLoading ? "Carregando…" : `${orcamentos.length} registros`}
 
@@ -170,7 +169,7 @@ function OrcamentosList() {
 
         <Button type="button" className="w-full sm:w-auto rounded-xl md:rounded-md" onClick={novo}>
 
-          <Plus className="h-4 w-4 mr-1" /> Novo orçamento
+          <Plus className="h-4 w-4 mr-1" /> {config.novoOrcamentoLabel}
 
         </Button>
 
@@ -198,9 +197,9 @@ function OrcamentosList() {
 
           const cli = clientes.find((c) => c.id === o.cliente_id);
 
-          const docLabel = labelDocumento(o.status);
+          const docLabel = labelDocumento(o.status, categoria);
 
-          const statusLabel = STATUS_LABEL[o.status];
+          const statusLabel = getStatusLabel(o.status, categoria);
 
           return (
 
@@ -348,7 +347,7 @@ function OrcamentosList() {
 
                     >
 
-                      {labelDocumento(o.status)}
+                      {labelDocumento(o.status, categoria)}
 
                     </Badge>
 
@@ -362,7 +361,7 @@ function OrcamentosList() {
 
                   <TableCell>
 
-                    <Badge variant="secondary">{STATUS_LABEL[o.status]}</Badge>
+                    <Badge variant="secondary">{getStatusLabel(o.status, categoria)}</Badge>
 
                   </TableCell>
 

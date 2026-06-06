@@ -7,9 +7,16 @@ import {
 } from "@/lib/pwa-install";
 
 export function usePwaInstallPrompt() {
+  const [mounted, setMounted] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [installed, setInstalled] = useState(isPwaInstalled);
-  const ios = isIosDevice();
+  const [installed, setInstalled] = useState(false);
+  const [ios, setIos] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setInstalled(isPwaInstalled());
+    setIos(isIosDevice());
+  }, []);
 
   useEffect(() => {
     if (!canShowPwaInstallUi()) return;
@@ -41,7 +48,8 @@ export function usePwaInstallPrompt() {
     setDeferredPrompt(null);
   }, [deferredPrompt]);
 
-  const visible = !installed && canShowPwaInstallUi() && (!!deferredPrompt || ios);
+  const visible =
+    mounted && !installed && canShowPwaInstallUi() && (!!deferredPrompt || ios);
 
   return {
     visible,

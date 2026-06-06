@@ -3,7 +3,13 @@ import { adminPageTitle } from "@/lib/app-brand";
 import { useAdminRefreshTick } from "@/components/admin/admin-refresh-context";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { obterEmpresaAdminRemote, setEmpresaPausadaAdminRemote } from "@/lib/api/admin.functions";
+import {
+  obterEmpresaAdminRemote,
+  setEmpresaCategoriaAdminRemote,
+  setEmpresaPausadaAdminRemote,
+} from "@/lib/api/admin.functions";
+import { EMPRESA_CATEGORIAS } from "@/lib/empresa-categorias";
+import type { EmpresaCategoria } from "@/lib/empresa-categorias/types";
 import type { AdminEmpresaDetalhe } from "@/lib/admin/types";
 import { formatDatePt } from "@/lib/billing/dates";
 import { getClientSessao } from "@/lib/auth/client-session";
@@ -12,6 +18,14 @@ import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/admin/empresas/$empresaId")({
   head: () => ({ meta: [{ title: adminPageTitle("Detalhe empresa") }] }),
@@ -24,6 +38,7 @@ function AdminEmpresaDetalhePage() {
   const [empresa, setEmpresa] = useState<AdminEmpresaDetalhe | null>(null);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
+  const [savingCategoria, setSavingCategoria] = useState(false);
 
   const load = useCallback(async () => {
     const sessao = getClientSessao();
@@ -44,6 +59,24 @@ function AdminEmpresaDetalhePage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const salvarCategoria = async (categoria: EmpresaCategoria) => {
+    if (!empresa || empresa.categoria === categoria) return;
+    const sessao = getClientSessao();
+    if (!sessao) return;
+    setSavingCategoria(true);
+    try {
+      await setEmpresaCategoriaAdminRemote({
+        data: { adminWhatsapp: sessao.id, empresaId, categoria },
+      });
+      toast.success("Categoria atualizada.");
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message ?? "Falha ao salvar categoria");
+    } finally {
+      setSavingCategoria(false);
+    }
+  };
 
   const togglePausa = async () => {
     if (!empresa) return;
@@ -113,6 +146,28 @@ function AdminEmpresaDetalhePage() {
             <p>
               <span className="text-muted-foreground">Documento:</span> {empresa.documento ?? "—"}
             </p>
+            <div className="space-y-1.5 pt-1">
+              <Label className="text-muted-foreground font-normal">Categoria do negócio</Label>
+              <Select
+                value={empresa.categoria}
+                disabled={savingCategoria}
+                onValueChange={(v) => void salvarCategoria(v as EmpresaCategoria)}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {EMPRESA_CATEGORIAS.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {EMPRESA_CATEGORIAS.find((c) => c.value === empresa.categoria)?.description}
+              </p>
+            </div>
             <p>
               <span className="text-muted-foreground">Orçamentos:</span> {empresa.orcamentosCount}
             </p>

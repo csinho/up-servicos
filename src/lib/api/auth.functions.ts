@@ -41,13 +41,20 @@ export const verifyWhatsAppOnRegisterRemote = createServerFn({ method: "POST" })
   });
 
 export const registerEmpresaWithAuthRemote = createServerFn({ method: "POST" })
-  .inputValidator((data: { nome: string; whatsapp: string }) =>
-    z.object({ nome: z.string().min(2), whatsapp: z.string() }).parse(data),
+  .inputValidator(
+    (data: { nome: string; whatsapp: string; categoria?: "generico" | "assistencia_tecnica" }) =>
+      z
+        .object({
+          nome: z.string().min(2),
+          whatsapp: z.string(),
+          categoria: z.enum(["generico", "assistencia_tecnica"]).optional(),
+        })
+        .parse(data),
   )
   .handler(async ({ data }) => {
     const env = getRuntimeEnv();
     const whatsapp = normalizeWhatsapp11(data.whatsapp);
-    return registerEmpresaWithAuth(data.nome, whatsapp, env);
+    return registerEmpresaWithAuth(data.nome, whatsapp, data.categoria ?? "generico", env);
   });
 
 export const requestLoginOtpRemote = createServerFn({ method: "POST" })

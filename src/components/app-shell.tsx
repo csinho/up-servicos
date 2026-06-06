@@ -6,7 +6,7 @@ import { AppLogo } from "@/components/AppLogo";
 import { EmpresaBillingBanner } from "@/components/empresa/EmpresaBillingBanner";
 import { MobileBottomNav } from "@/components/mobile/mobile-bottom-nav";
 import {
-  EMPRESA_NAV,
+  currentPageTitle,
   getMobileHeaderBackLabel,
   getMobileHeaderBackTarget,
   normalizePath,
@@ -14,12 +14,19 @@ import {
 } from "@/lib/mobile-nav";
 import { cn } from "@/lib/utils";
 import { useEmpresaBranding } from "@/hooks/use-empresa-branding";
+import { useEmpresaCategoria } from "@/hooks/use-empresa-categoria";
 import { Button } from "@/components/ui/button";
 
-function NavLinks({ pathname }: { pathname: string }) {
+function NavLinks({
+  pathname,
+  nav,
+}: {
+  pathname: string;
+  nav: ReturnType<typeof useEmpresaCategoria>["nav"];
+}) {
   return (
     <>
-      {EMPRESA_NAV.map((n) => {
+      {nav.map((n) => {
         const active = n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
         return (
           <Link
@@ -41,23 +48,13 @@ function NavLinks({ pathname }: { pathname: string }) {
   );
 }
 
-function currentPageTitle(pathname: string): string {
-  if (pathname === "/menu") return "Mais opções";
-  const item = EMPRESA_NAV.find((n) => (n.to === "/" ? pathname === "/" : pathname.startsWith(n.to)));
-  if (pathname === "/clientes/novo") return "Novo cliente";
-  if (pathname.startsWith("/clientes/")) return "Editar cliente";
-  if (pathname === "/servicos/novo") return "Novo serviço";
-  if (pathname.startsWith("/servicos/")) return "Editar serviço";
-  if (pathname.startsWith("/orcamentos/")) return "Orçamento";
-  return item?.short ?? APP_NAME;
-}
-
 export function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const path = normalizePath(pathname);
   const { logoUrl, nome, isLoading } = useEmpresaBranding();
-  const pageTitle = currentPageTitle(pathname);
-  const showBottomNav = shouldShowMobileBottomNav(path);
+  const { nav, categoria } = useEmpresaCategoria();
+  const pageTitle = currentPageTitle(pathname, categoria);
+  const showBottomNav = shouldShowMobileBottomNav(path, categoria);
   const mobileBackTo = getMobileHeaderBackTarget(pathname);
 
   return (
@@ -71,7 +68,7 @@ export function AppShell() {
           )}
         </div>
         <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
-          <NavLinks pathname={pathname} />
+          <NavLinks pathname={pathname} nav={nav} />
         </nav>
         <div className="shrink-0 p-3 border-t">
           <Button
@@ -112,7 +109,7 @@ export function AppShell() {
             <Link
               to={mobileBackTo}
               className="md:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-foreground hover:bg-muted transition-colors"
-              aria-label={getMobileHeaderBackLabel(pathname)}
+              aria-label={getMobileHeaderBackLabel(pathname, categoria)}
             >
               <ArrowLeft className="h-5 w-5" />
             </Link>

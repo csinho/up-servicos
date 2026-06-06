@@ -4,7 +4,7 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
+    "dev": "npm run pwa:icons && vite dev",
     "build": "npm run pwa:icons && cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build",
     "build:verify": "node scripts/verify-dist.mjs",
     "build:dev": "vite build --mode development",

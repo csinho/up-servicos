@@ -20,9 +20,8 @@ import {
   formatCalendarDate,
   formatDate,
   formatPercentLabel,
-  labelDocumento,
-  labelDocumentoLower,
 } from "./types";
+import { labelDocumento, labelDocumentoLower } from "./empresa-categorias";
 
 function enderecoLinha(e?: {
   rua?: string;
@@ -92,8 +91,10 @@ export function buildOrcamentoPdfDoc(
   const subtotal = calcSubtotal(orcamento.itens);
   const descontoValor = calcDescontoValor(subtotal, orcamento.desconto_percentual);
   const total = calcTotal(orcamento);
-  const docLabel = labelDocumento(orcamento.status).toUpperCase();
-  const itensTitulo = `Itens do ${labelDocumentoLower(orcamento.status)}`;
+  const cat = empresa.categoria;
+  const docLabel = labelDocumento(orcamento.status, cat).toUpperCase();
+  const itensTitulo = `Itens do ${labelDocumentoLower(orcamento.status, cat)}`;
+  const assistencia = orcamento.assistencia;
 
   const empresaCol: PdfContent[] = [
     { text: empresa.nome, style: "companyName" },
@@ -148,7 +149,7 @@ export function buildOrcamentoPdfDoc(
       ? `Desconto (${formatPercentLabel(orcamento.desconto_percentual)})`
       : "Desconto";
 
-  const footerText = `${empresa.nome} · ${formatDate(orcamento.data_criacao)} · ${labelDocumento(orcamento.status)} ${orcamento.numero}`;
+  const footerText = `${empresa.nome} · ${formatDate(orcamento.data_criacao)} · ${labelDocumento(orcamento.status, cat)} ${orcamento.numero}`;
 
   return {
     pageSize: "A4",
@@ -223,10 +224,38 @@ export function buildOrcamentoPdfDoc(
               : []),
             { text: enderecoLinha(cliente?.endereco), style: "small" },
           ]),
-          card("Projeto", [
-            { text: orcamento.nome_projeto, bold: true, fontSize: 10 },
-            ...(orcamento.descricao ? [{ text: orcamento.descricao, style: "small" }] : []),
-          ]),
+          ...(assistencia &&
+          (assistencia.aparelho_marca ||
+            assistencia.aparelho_modelo ||
+            assistencia.imei ||
+            assistencia.defeito_relatado)
+            ? [
+                card("Aparelho", [
+                  {
+                    text:
+                      [assistencia.aparelho_marca, assistencia.aparelho_modelo]
+                        .filter(Boolean)
+                        .join(" ") || orcamento.nome_projeto,
+                    bold: true,
+                    fontSize: 10,
+                  },
+                  ...(assistencia.imei
+                    ? [{ text: `IMEI: ${assistencia.imei}`, style: "small" }]
+                    : []),
+                  ...(assistencia.defeito_relatado
+                    ? [{ text: `Defeito relatado: ${assistencia.defeito_relatado}`, style: "small" }]
+                    : []),
+                  ...(assistencia.acessorios
+                    ? [{ text: `Acessórios: ${assistencia.acessorios}`, style: "small" }]
+                    : []),
+                ]),
+              ]
+            : [
+                card("Projeto", [
+                  { text: orcamento.nome_projeto, bold: true, fontSize: 10 },
+                  ...(orcamento.descricao ? [{ text: orcamento.descricao, style: "small" }] : []),
+                ]),
+              ]),
         ],
         columnGap: 8,
       },

@@ -65,6 +65,7 @@ export async function verifyWhatsAppOnRegister(
 export async function registerEmpresaWithAuth(
   nome: string,
   whatsapp11: string,
+  categoria: "generico" | "assistencia_tecnica" = "generico",
   env?: Record<string, string | undefined>,
 ): Promise<{ sessao: EmpresaSessao; auth: AuthTokens }> {
   const existing = await findEmpresaByWhatsapp(whatsapp11, env);
@@ -84,6 +85,7 @@ export async function registerEmpresaWithAuth(
     .insert({
       nome: nome.trim(),
       telefone: normalizeTelefoneStorage(whatsapp11),
+      categoria,
       auth_user_id: authUserId,
       status: "ativo",
       billing_status: "trial",

@@ -1,4 +1,5 @@
 import type { BillingStatus } from "@/lib/billing/types";
+import type { EmpresaCategoria } from "@/lib/empresa-categorias/types";
 
 export type AdminSessao = {
   tipo: "admin";
@@ -11,6 +12,7 @@ export type EmpresaOperacionalStatus = "ativo" | "inativo";
 export type AdminEmpresaListItem = {
   id: string;
   nome: string;
+  categoria: EmpresaCategoria;
   telefone: string | null;
   email: string | null;
   status: EmpresaOperacionalStatus;

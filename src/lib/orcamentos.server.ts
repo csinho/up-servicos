@@ -1,6 +1,7 @@
 import { getSupabaseServer } from "@/integrations/supabase/server";
 import { resolveEmpresaId } from "@/lib/billing/empresa.server";
-import type { StatusOrcamento } from "./types";
+import { getCategoriaConfig, normalizeEmpresaCategoria } from "@/lib/empresa-categorias";
+import type { StatusOrcamento } from "@/lib/empresa-categorias/types";
 
 async function garantirLancamentoReceber(
   sb: ReturnType<typeof getSupabaseServer>,
@@ -31,6 +32,7 @@ async function garantirLancamentoReceber(
     vencimento: params.prazoEntrega ?? new Date().toISOString(),
     status: "pendente" as const,
     forma_pagamento: params.formaPagamento ?? null,
+    origem: "automatico" as const,
   };
 
   if (!existentes?.length) {
@@ -51,6 +53,34 @@ async function garantirLancamentoReceber(
   if (eUpFin) throw new Error(eUpFin.message);
 }
 
+async function baixarEstoqueOs(
+  sb: ReturnType<typeof getSupabaseServer>,
+  orcamentoId: string,
+): Promise<void> {
+  const { data: itens, error } = await sb
+    .from("orcamento_itens")
+    .select("produto_id, quantidade")
+    .eq("orcamento_id", orcamentoId)
+    .not("produto_id", "is", null);
+  if (error) throw new Error(error.message);
+  for (const item of itens ?? []) {
+    if (!item.produto_id) continue;
+    const { data: prod, error: pErr } = await sb
+      .from("produtos")
+      .select("quantidade")
+      .eq("id", item.produto_id)
+      .maybeSingle();
+    if (pErr) throw new Error(pErr.message);
+    if (!prod) continue;
+    const nova = Math.max(0, Number(prod.quantidade) - Number(item.quantidade));
+    const { error: uErr } = await sb
+      .from("produtos")
+      .update({ quantidade: nova })
+      .eq("id", item.produto_id);
+    if (uErr) throw new Error(uErr.message);
+  }
+}
+
 export async function moverOrcamentoServer(
   id: string,
   status: StatusOrcamento,
@@ -69,6 +99,16 @@ export async function moverOrcamentoServer(
   if (!atual) return;
 
   const empresaId = String(atual.empresa_id ?? resolveEmpresaId(empresaIdExplicit));
+
+  const { data: empRow } = await sb
+    .from("empresas")
+    .select("categoria")
+    .eq("id", empresaId)
+    .maybeSingle();
+  const categoria = normalizeEmpresaCategoria(empRow?.categoria);
+  const catConfig = getCategoriaConfig(categoria);
+  const billingTrigger = catConfig.billingTriggerStatus;
+
   const itensPreview = (atual.orcamento_itens ?? []).map((i: Record<string, unknown>) => ({
     quantidade: Number(i.quantidade) || 0,
     valor_unitario: Number(i.valor_unitario) || 0,
@@ -82,8 +122,7 @@ export async function moverOrcamentoServer(
   const totalPreview =
     subPreview - subPreview * (descontoPctPreview / 100) + (Number(atual.acrescimo) || 0);
 
-  // Corrige lançamento ausente se um movimento anterior falhou após gravar o status.
-  if (atual.status === status && status === "em_producao") {
+  if (atual.status === status && status === billingTrigger) {
     await garantirLancamentoReceber(sb, {
       orcamentoId: id,
       empresaId,
@@ -100,7 +139,9 @@ export async function moverOrcamentoServer(
   if (atual.status === status) return;
 
   const patch: Record<string, unknown> = { status };
-  if (status === "em_producao" && !atual.data_aprovacao) {
+  const aprovacaoStatus =
+    categoria === "assistencia_tecnica" ? "entrada" : "em_producao";
+  if (status === aprovacaoStatus && !atual.data_aprovacao) {
     patch.data_aprovacao = new Date().toISOString();
   }
   if (status === "entregue" && !atual.data_entrega) {
@@ -122,12 +163,15 @@ export async function moverOrcamentoServer(
     quantidade: Number(i.quantidade) || 0,
     valor_unitario: Number(i.valor_unitario) || 0,
   }));
-  const sub = itens.reduce((s: number, i: { quantidade: number; valor_unitario: number }) => s + i.quantidade * i.valor_unitario, 0);
+  const sub = itens.reduce(
+    (s: number, i: { quantidade: number; valor_unitario: number }) =>
+      s + i.quantidade * i.valor_unitario,
+    0,
+  );
   const descontoPct = Number(atual.desconto_percentual) || 0;
-  const descontoValor = sub * (descontoPct / 100);
-  const total = sub - descontoValor + (Number(atual.acrescimo) || 0);
+  const total = sub - sub * (descontoPct / 100) + (Number(atual.acrescimo) || 0);
 
-  if (status === "em_producao") {
+  if (status === billingTrigger) {
     await garantirLancamentoReceber(sb, {
       orcamentoId: id,
       empresaId,
@@ -150,5 +194,9 @@ export async function moverOrcamentoServer(
       .eq("orcamento_id", id)
       .eq("tipo", "receber");
     if (ePago) throw new Error(ePago.message);
+
+    if (categoria === "assistencia_tecnica") {
+      await baixarEstoqueOs(sb, id);
+    }
   }
 }

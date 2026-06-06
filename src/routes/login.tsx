@@ -42,11 +42,6 @@ function LoginPage() {
   const [step, setStep] = useState<"whatsapp" | "otp">("whatsapp");
   const [role, setRole] = useState<LoginRole | null>(null);
   const [loading, setLoading] = useState(false);
-  const [sessionChecked, setSessionChecked] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const sessao = getClientSessao();
-    return !isAdminSessao(sessao) && !isEmpresaSessao(sessao);
-  });
   const otpRef = useRef<React.ComponentRef<typeof InputOTP>>(null);
 
   const focusOtp = () => {
@@ -64,18 +59,8 @@ function LoginPage() {
     const sessao = getClientSessao();
     if (isAdminSessao(sessao) || isEmpresaSessao(sessao)) {
       window.location.replace(getPostLoginPath(sessao));
-      return;
     }
-    setSessionChecked(true);
   }, []);
-
-  if (!sessionChecked) {
-    return (
-      <div className="flex min-h-[100dvh] items-center justify-center text-sm text-muted-foreground">
-        Redirecionando…
-      </div>
-    );
-  }
 
   const sendOtp = async () => {
     if (whatsapp.length < 11) {

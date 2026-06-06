@@ -1,30 +1,35 @@
-export type StatusOrcamento = "orcamento" | "em_producao" | "vistoria" | "entregue";
+export type {
+  CategoriaCaixa,
+  CategoriaProduto,
+  EmpresaCategoria,
+  OrigemFinanceiro,
+  StatusOrcamento,
+} from "./empresa-categorias/types";
 
-export const STATUS_LABEL: Record<StatusOrcamento, string> = {
-  orcamento: "Orçamento",
-  em_producao: "Em produção",
-  vistoria: "Vistoria",
-  entregue: "Entregue",
-};
+import type { StatusOrcamento as StatusOrcamentoType } from "./empresa-categorias/types";
+import { genericoConfig } from "./empresa-categorias/generico";
 
-export const STATUS_ORDER: StatusOrcamento[] = ["orcamento", "em_producao", "vistoria", "entregue"];
+/** Labels padrão (empresa genérica) — prefira getStatusLabel(categoria) em telas multi-categoria. */
+export const STATUS_LABEL: Record<string, string> = genericoConfig.statusLabels;
 
-/** Enquanto status é `orcamento`, o documento é um orçamento; depois vira pedido. */
-export function isFaseOrcamento(status: StatusOrcamento): boolean {
+export const STATUS_ORDER: StatusOrcamentoType[] = genericoConfig.statusOrder;
+
+/** Enquanto status é `orcamento`, o documento é um orçamento; depois vira pedido/OS. */
+export function isFaseOrcamento(status: string): boolean {
   return status === "orcamento";
 }
 
-export function labelDocumento(status: StatusOrcamento): "Orçamento" | "Pedido" {
+export function labelDocumento(status: string): "Orçamento" | "Pedido" {
   return isFaseOrcamento(status) ? "Orçamento" : "Pedido";
 }
 
-export function labelDocumentoLower(status: StatusOrcamento): "orçamento" | "pedido" {
+export function labelDocumentoLower(status: string): "orçamento" | "pedido" {
   return isFaseOrcamento(status) ? "orçamento" : "pedido";
 }
 
 export type StatusFinanceiro = "pendente" | "pago" | "atrasado" | "parcial";
 export type TipoFinanceiro = "pagar" | "receber";
-export type UnidadeServico = "serviço" | "hora" | "mensalidade" | "pacote";
+export type UnidadeServico = "serviço" | "hora" | "mensalidade" | "pacote" | "peça";
 
 export const FORMAS_PAGAMENTO = ["Pix", "Débito", "Crédito"] as const;
 export type FormaPagamento = (typeof FORMAS_PAGAMENTO)[number];
@@ -129,6 +134,7 @@ export function serializeRedesSociais(redes: RedeSocial[]): string | undefined {
 export interface Empresa {
   id: string;
   nome: string;
+  categoria?: import("./empresa-categorias/types").EmpresaCategoria;
   logo_url?: string; // data URL
   documento?: string;
   telefone?: string;
@@ -165,6 +171,7 @@ export interface Servico {
 export interface OrcamentoItem {
   id: string;
   servico_id?: string;
+  produto_id?: string;
   nome: string;
   descricao?: string;
   unidade: UnidadeServico;
@@ -174,8 +181,31 @@ export interface OrcamentoItem {
 
 export interface HistoricoStatus {
   data: string;
-  de: StatusOrcamento;
-  para: StatusOrcamento;
+  de: string;
+  para: string;
+}
+
+export interface OrcamentoAssistencia {
+  orcamento_id: string;
+  aparelho_marca?: string;
+  aparelho_modelo?: string;
+  imei?: string;
+  defeito_relatado?: string;
+  acessorios?: string;
+  senha_dispositivo?: string;
+  checklist_entrada?: Record<string, boolean>;
+}
+
+export interface Produto {
+  id: string;
+  nome: string;
+  categoria: import("./empresa-categorias/types").CategoriaProduto;
+  quantidade: number;
+  qtd_minima: number;
+  preco_custo: number;
+  preco_venda: number;
+  ativo: boolean;
+  created_at?: string;
 }
 
 export interface Orcamento {
@@ -184,7 +214,8 @@ export interface Orcamento {
   cliente_id: string;
   nome_projeto: string;
   descricao?: string;
-  status: StatusOrcamento;
+  status: string;
+  assistencia?: OrcamentoAssistencia;
   itens: OrcamentoItem[];
   /** Percentual sobre o subtotal (0–100). */
   desconto_percentual: number;
@@ -214,6 +245,8 @@ export interface Financeiro {
   status: StatusFinanceiro;
   forma_pagamento?: string;
   observacoes?: string;
+  origem?: import("./empresa-categorias/types").OrigemFinanceiro;
+  categoria_caixa?: import("./empresa-categorias/types").CategoriaCaixa;
 }
 
 export function calcSubtotal(itens: OrcamentoItem[]): number {

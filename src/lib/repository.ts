@@ -1,14 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getEmpresaIdFromSessao } from "@/lib/auth/client-session";
+import { normalizeEmpresaCategoria } from "@/lib/empresa-categorias";
 import type {
   Cliente,
   Empresa,
   Financeiro,
   HistoricoStatus,
   Orcamento,
+  OrcamentoAssistencia,
   OrcamentoItem,
   Servico,
-  StatusOrcamento,
   UnidadeServico,
 } from "./types";
 import {
@@ -41,12 +42,14 @@ export const empresaRepo = {
       return {
         id: empresaId,
         nome: "Minha Empresa",
+        categoria: "generico",
         endereco: {},
       };
     }
     return {
       id: data.id,
       nome: data.nome,
+      categoria: normalizeEmpresaCategoria(data.categoria),
       logo_url: data.logo_url ?? undefined,
       documento: data.documento ?? undefined,
       telefone: data.telefone ?? undefined,
@@ -163,6 +166,7 @@ function mapOrcamento(r: any): Orcamento {
     .map((i: any) => ({
       id: i.id,
       servico_id: i.servico_id ?? undefined,
+      produto_id: i.produto_id ?? undefined,
       nome: i.nome ?? "",
       descricao: i.descricao ?? undefined,
       unidade: (i.unidade as UnidadeServico) ?? "serviço",
@@ -174,16 +178,32 @@ function mapOrcamento(r: any): Orcamento {
     .sort((a: any, b: any) => +new Date(a.data) - +new Date(b.data))
     .map((h: any) => ({
       data: h.data,
-      de: h.status_anterior as StatusOrcamento,
-      para: h.status_novo as StatusOrcamento,
+      de: h.status_anterior,
+      para: h.status_novo,
     }));
+  const assistRaw = Array.isArray(r.orcamento_assistencia)
+    ? r.orcamento_assistencia[0]
+    : r.orcamento_assistencia;
+  const assistencia: OrcamentoAssistencia | undefined = assistRaw
+    ? {
+        orcamento_id: r.id,
+        aparelho_marca: assistRaw.aparelho_marca ?? undefined,
+        aparelho_modelo: assistRaw.aparelho_modelo ?? undefined,
+        imei: assistRaw.imei ?? undefined,
+        defeito_relatado: assistRaw.defeito_relatado ?? undefined,
+        acessorios: assistRaw.acessorios ?? undefined,
+        senha_dispositivo: assistRaw.senha_dispositivo ?? undefined,
+        checklist_entrada: (assistRaw.checklist_entrada as Record<string, boolean>) ?? undefined,
+      }
+    : undefined;
   return {
     id: r.id,
     numero: r.numero,
     cliente_id: r.cliente_id ?? "",
     nome_projeto: r.nome_projeto ?? "",
     descricao: r.descricao ?? undefined,
-    status: (r.status as StatusOrcamento) ?? "orcamento",
+    status: r.status ?? "orcamento",
+    assistencia,
     itens,
     desconto_percentual: resolveDescontoPercentual(r, itens),
     acrescimo: Number(r.acrescimo) || 0,
@@ -216,7 +236,7 @@ function resolveDescontoPercentual(
   return Math.min(100, Math.round((legacy / sub) * 10000) / 100);
 }
 
-const ORC_SELECT = "*, orcamento_itens(*), historico_status(*)";
+const ORC_SELECT = "*, orcamento_itens(*), historico_status(*), orcamento_assistencia(*)";
 
 export const orcamentosRepo = {
   async list(): Promise<Orcamento[]> {
@@ -268,6 +288,20 @@ export const orcamentosRepo = {
     const { error: e1 } = await supabase.from("orcamentos").upsert(head);
     if (e1) throw new Error(e1.message);
 
+    if (o.assistencia) {
+      const { error: eAssist } = await supabase.from("orcamento_assistencia").upsert({
+        orcamento_id: o.id,
+        aparelho_marca: o.assistencia.aparelho_marca ?? null,
+        aparelho_modelo: o.assistencia.aparelho_modelo ?? null,
+        imei: o.assistencia.imei ?? null,
+        defeito_relatado: o.assistencia.defeito_relatado ?? null,
+        acessorios: o.assistencia.acessorios ?? null,
+        senha_dispositivo: o.assistencia.senha_dispositivo ?? null,
+        checklist_entrada: o.assistencia.checklist_entrada ?? {},
+      });
+      if (eAssist) throw new Error(eAssist.message);
+    }
+
     // substituir itens
     const { error: eDel } = await supabase
       .from("orcamento_itens")
@@ -280,6 +314,7 @@ export const orcamentosRepo = {
         id: it.id,
         orcamento_id: o.id,
         servico_id: it.servico_id ?? null,
+        produto_id: it.produto_id ?? null,
         nome: it.nome,
         descricao: it.descricao ?? null,
         unidade: it.unidade,
@@ -330,7 +365,7 @@ export const orcamentosRepo = {
     const { error } = await supabase.from("orcamentos").delete().eq("id", id);
     if (error) throw new Error(error.message);
   },
-  async move(id: string, status: StatusOrcamento): Promise<void> {
+  async move(id: string, status: string): Promise<void> {
     const empresaId = requireEmpresaId();
     const atual = await this.get(id);
     if (!atual || atual.status === status) return;
@@ -425,6 +460,8 @@ export const financeiroRepo = {
       status: r.status,
       forma_pagamento: r.forma_pagamento ?? undefined,
       observacoes: r.observacoes ?? undefined,
+      origem: r.origem ?? (r.orcamento_id ? "automatico" : "manual"),
+      categoria_caixa: r.categoria_caixa ?? undefined,
     }));
   },
   async upsert(f: Financeiro): Promise<void> {
@@ -442,6 +479,8 @@ export const financeiroRepo = {
       status: f.status,
       forma_pagamento: f.forma_pagamento ?? null,
       observacoes: f.observacoes ?? null,
+      origem: f.origem ?? (f.orcamento_id ? "automatico" : "manual"),
+      categoria_caixa: f.categoria_caixa ?? null,
     });
     if (error) throw new Error(error.message);
   },
