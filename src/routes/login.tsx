@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PhoneField } from "@/components/auth/PhoneField";
@@ -118,18 +118,6 @@ function LoginPage() {
               >
                 Enviar código
               </Button>
-              <p className="text-center text-sm text-muted-foreground">
-                Primeira vez?{" "}
-                <Link to="/cadastro/empresa" className="text-primary underline-offset-4 hover:underline">
-                  Criar conta
-                </Link>
-              </p>
-              <p className="text-center text-xs text-muted-foreground">
-                Admin sem OTP?{" "}
-                <Link to="/setup/whatsapp" className="text-primary underline-offset-4 hover:underline">
-                  Configurar WhatsApp
-                </Link>
-              </p>
             </>
           ) : (
             <>
