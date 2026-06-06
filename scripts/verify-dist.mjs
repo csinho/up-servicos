@@ -6,6 +6,10 @@ const required = [
   "dist/server/index.js",
   "dist/client",
   "dist/client/assets",
+  "dist/client/sw.js",
+  "dist/client/manifest.webmanifest",
+  "dist/client/pwa-192x192.png",
+  "dist/client/pwa-512x512.png",
 ];
 
 const missing = required.filter((p) => !fs.existsSync(p));

@@ -11,9 +11,10 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { RequireEmpresa } from "@/components/auth/RequireEmpresa";
 import { Toaster } from "@/components/ui/sonner";
-
+import { PwaRegister } from "@/components/pwa-register";
 
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/app-brand";
+import { PWA_THEME_COLOR } from "@/lib/pwa-config";
 import appCss from "../styles.css?url";
 
 
@@ -78,9 +79,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
       { title: APP_NAME },
       { name: "description", content: APP_DESCRIPTION },
+      { name: "theme-color", content: PWA_THEME_COLOR },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: APP_NAME },
+      { name: "application-name", content: APP_NAME },
+      { name: "msapplication-TileColor", content: PWA_THEME_COLOR },
       { property: "og:title", content: APP_NAME },
       { property: "og:description", content: APP_DESCRIPTION },
       { property: "og:type", content: "website" },
@@ -95,6 +106,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "icon",
         type: "image/svg+xml",
         href: "/favicon.svg",
+      },
+      {
+        rel: "apple-touch-icon",
+        href: "/pwa-180x180.png",
+        sizes: "180x180",
+      },
+      {
+        rel: "manifest",
+        href: "/manifest.webmanifest",
       },
     ],
   }),
@@ -139,6 +159,7 @@ function RootComponent() {
           <AppShell />
         </RequireEmpresa>
       )}
+      <PwaRegister />
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
   );
