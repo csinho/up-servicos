@@ -109,9 +109,10 @@ export function buildOrcamentoPdfDoc(
   const headerLeft: PdfContent = empresa.logo_url
     ? {
         columns: [
-          { image: empresa.logo_url, width: 52, margin: [0, 0, 10, 0] },
+          { image: empresa.logo_url, width: 48, margin: [0, 2, 0, 0] },
           { stack: empresaCol, width: "*" },
         ],
+        columnGap: 18,
       }
     : { stack: empresaCol };
 
@@ -206,9 +207,9 @@ export function buildOrcamentoPdfDoc(
             ],
           },
         ],
-        margin: [0, 0, 0, 8],
+        margin: [0, 0, 0, 12],
       },
-      { canvas: [{ type: "line", x1: 0, y1: 0, x2: 539, y2: 0, lineWidth: 2 }], margin: [0, 0, 0, 12] },
+      { canvas: [{ type: "line", x1: 0, y1: 0, x2: 539, y2: 0, lineWidth: 2 }], margin: [0, 4, 0, 14] },
       {
         columns: [
           card("Dados do cliente", [
@@ -321,28 +322,23 @@ export function buildOrcamentoPdfDoc(
         ],
         margin: [0, 0, 0, 10],
       },
-      {
-        columns: [
-          card("Condições comerciais", [
-            { text: orcamento.condicoes || "—", fontSize: 8 },
-            ...(orcamento.forma_pagamento
-              ? [{ text: `Pagamento: ${orcamento.forma_pagamento}`, style: "small", margin: [0, 4, 0, 0] }]
-              : []),
-            ...(formatGarantia(orcamento.garantia_quantidade, orcamento.garantia_unidade)
-              ? [
-                  {
-                    text: `Garantia: ${formatGarantia(orcamento.garantia_quantidade, orcamento.garantia_unidade)}`,
-                    style: "small",
-                    margin: [0, 4, 0, 0],
-                  },
-                ]
-              : []),
-            ...(empresa.dados_bancarios ? [{ text: empresa.dados_bancarios, style: "small" }] : []),
-          ]),
-          card("Observações", [{ text: orcamento.observacoes || "—", fontSize: 8 }]),
-        ],
-        columnGap: 8,
-      },
+      card("Observações", [{ text: orcamento.observacoes || "—", fontSize: 8 }]),
+      card("Condições comerciais", [
+        { text: orcamento.condicoes || "—", fontSize: 8 },
+        ...(orcamento.forma_pagamento
+          ? [{ text: `Pagamento: ${orcamento.forma_pagamento}`, style: "small", margin: [0, 4, 0, 0] }]
+          : []),
+        ...(formatGarantia(orcamento.garantia_quantidade, orcamento.garantia_unidade)
+          ? [
+              {
+                text: `Garantia: ${formatGarantia(orcamento.garantia_quantidade, orcamento.garantia_unidade)}`,
+                style: "small",
+                margin: [0, 4, 0, 0],
+              },
+            ]
+          : []),
+        ...(empresa.dados_bancarios ? [{ text: empresa.dados_bancarios, style: "small" }] : []),
+      ]),
     ],
   };
 }
